@@ -3,23 +3,6 @@ from pyrogram import Client, Filters, Message
 from pyrogram.errors import RPCError
 
 
-@Client.on_message(Filters.me & Filters.command('flood', prefixes='.'))
-async def flood_handler(_, message: Message):
-    args = message.text.split(maxsplit=2)
-    if len(args) != 3 or not args[1].isdigit():
-        await message.edit_text(
-            'Pass the number of messages and the text that will be repeated.\n\n`.flood 3 we are victors!`'
-        )
-    else:
-        await message.delete()
-        for _ in range(int(args[1])):
-            try:
-                await message.reply_text(args[2], quote=False, disable_web_page_preview=True)
-            except RPCError as ex:
-                logger.error(f'{ex} in .flood, stopping command!')
-                break
-
-
 @Client.on_message(Filters.me & Filters.reply & Filters.command('purge', prefixes='.'))
 async def purge_handler(client: Client, message: Message):
     args = message.text.split(maxsplit=2)

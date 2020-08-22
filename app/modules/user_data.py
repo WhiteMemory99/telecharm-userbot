@@ -1,25 +1,6 @@
 from pyrogram import Client, Filters, Message
 from pyrogram.errors import FirstnameInvalid, UsernameInvalid, UsernameNotModified, UsernameOccupied
 
-import config
-
-
-@Client.on_message(Filters.me & Filters.command(['start', 'help'], prefixes='.'))
-async def help_handler(_, message: Message):
-    args = message.text.split(maxsplit=2)
-    if 'ru' in args:
-        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help` - Показать это сообщение.\n' \
-               '`.stats` - Статистика моего профиля.\n`.flood` - Флуд сообщениями.\n`.purge` - Очистка сообщений\n' \
-               '`.name` - Сменить моё имя\n`.username` - Сменить мой юзернейм\n`.bio` - Отредактировать "О себе"\n\n' \
-               f'__[Подробнее о командах]({config.GUIDE_LINK_RU})\n[Telecharm на GitHub]({config.GITHUB_LINK})__'
-    else:
-        text = f'**Telecharm {config.TELECHARM_VERSION}**:\n`.help ru` for Russian\n\n`.help` - Show this message.\n' \
-               '`.stats` - My profile stats.\n`.flood` - Flood messages.\n`.purge` - Purge messages\n' \
-               '`.name` - Change my name\n`.username` - Change my username\n`.bio` - Edit my about info\n\n' \
-               f'__[More on commands]({config.GUIDE_LINK_EN})\n[Telecharm on GitHub]({config.GITHUB_LINK})__'
-
-    await message.edit_text(text, disable_web_page_preview=True)
-
 
 @Client.on_message(Filters.me & Filters.command(['stat', 'stats'], prefixes='.'))  # TODO: WE NEED MORE STATS!
 async def stats_handler(client: Client, message: Message):
