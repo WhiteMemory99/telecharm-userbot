@@ -8,7 +8,6 @@ async def flood_handler(_, message: Message):
     args = message.text.split(maxsplit=2)
     if len(args) != 3 or not args[1].isdigit():
         await message.edit_text(
-            'Передайте число сообщений и текст, который будет повторяться.\n'
             'Pass the number of messages and the text that will be repeated.\n\n`.flood 3 we are victors!`'
         )
     else:
@@ -44,8 +43,7 @@ async def purge_handler(client: Client, message: Message):
         else:
             msgs.append(msg.message_id)
 
-    logger.info(len(msgs))
     try:
-        await client.delete_messages(message.chat.id, message_ids=msgs)
+        await client.delete_messages(message.chat.id, message_ids=msgs[::-1])
     except RPCError as ex:
         logger.error(f'Could not .purge messages due to {ex}')

@@ -11,4 +11,4 @@ Currently in active WIP state, so feel free to contribute.
 5. Run `app/main.py`.
 
 ## **Usage**
-After logging in just send `.help` command to get the available commands list in **Russian** and `.help en` for **English**.<br />Thanks for using **Telecharm** :)
+After logging in just send `.help` command to get the available commands list in **English** and `.help ru` for **Russian**.<br />Thanks for using **Telecharm** :)
