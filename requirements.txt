@@ -1,4 +1,4 @@
-pyrogram>=0.18.0-async
+pyrogram>=1.0.6
 envparse>=0.2.0
 loguru>=0.5.1
 tgcrypto>=1.2.1

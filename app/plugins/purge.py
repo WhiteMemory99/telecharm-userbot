@@ -1,9 +1,10 @@
 from loguru import logger
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
 from pyrogram.errors import RPCError
+from pyrogram.types import Message
 
 
-@Client.on_message(Filters.me & Filters.reply & Filters.command('purge', prefixes='.'))
+@Client.on_message(filters.me & filters.reply & filters.command('purge', prefixes='.'))
 async def purge_handler(client: Client, message: Message):
     args = message.text.split(maxsplit=2)
     me_mode = True if 'me' in args else False

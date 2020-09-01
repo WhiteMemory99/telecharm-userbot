@@ -1,8 +1,9 @@
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
 from pyrogram.errors import RPCError
+from pyrogram.types import Message
 
 
-@Client.on_message(Filters.me & Filters.command('mention', prefixes='.'))
+@Client.on_message(filters.me & filters.command('mention', prefixes='.'))
 async def mention_handler(client: Client, message: Message):
     args = message.text.split(maxsplit=1)
     if len(args) == 1:

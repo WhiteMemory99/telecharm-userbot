@@ -1,9 +1,10 @@
 from loguru import logger
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
 from pyrogram.errors import RPCError
+from pyrogram.types import Message
 
 
-@Client.on_message(Filters.me & Filters.command('flood', prefixes='.'))
+@Client.on_message(filters.me & filters.command('flood', prefixes='.'))
 async def flood_handler(_, message: Message):
     args = message.text.split(maxsplit=2)
     if len(args) != 3 or not args[1].isdigit():

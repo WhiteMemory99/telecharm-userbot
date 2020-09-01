@@ -1,8 +1,9 @@
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
 from pyrogram.errors import FirstnameInvalid, UsernameInvalid, UsernameNotModified, UsernameOccupied
+from pyrogram.types import Message
 
 
-@Client.on_message(Filters.me & Filters.command(['stat', 'stats'], prefixes='.'))  # TODO: WE NEED MORE STATS!
+@Client.on_message(filters.me & filters.command(['stat', 'stats'], prefixes='.'))  # TODO: WE NEED MORE STATS!
 async def stats_handler(client: Client, message: Message):
     args = message.text.split(maxsplit=2)
     await message.edit_text(f'{message.text}\nGathering info...')
@@ -34,7 +35,7 @@ async def stats_handler(client: Client, message: Message):
     await message.edit_text(text)
 
 
-@Client.on_message(Filters.me & Filters.command('name', prefixes='.'))
+@Client.on_message(filters.me & filters.command('name', prefixes='.'))
 async def name_handler(client: Client, message: Message):
     args = message.text.split()[1:]
     if not args:
@@ -58,7 +59,7 @@ async def name_handler(client: Client, message: Message):
             await message.edit_text('Your new first name is unacceptable.')
 
 
-@Client.on_message(Filters.me & Filters.command('username', prefixes='.'))
+@Client.on_message(filters.me & filters.command('username', prefixes='.'))
 async def username_handler(client: Client, message: Message):
     args = message.text.split(maxsplit=2)[1:]
     if not args:
@@ -85,7 +86,7 @@ async def username_handler(client: Client, message: Message):
                 await message.edit_text('This username is unacceptable.')
 
 
-@Client.on_message(Filters.me & Filters.command(['bio', 'about'], prefixes='.'))
+@Client.on_message(filters.me & filters.command(['bio', 'about'], prefixes='.'))
 async def bio_handler(client: Client, message: Message):
     args = message.text.partition(' ')[2]
     if not args:
