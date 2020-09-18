@@ -9,7 +9,8 @@ from storage import jstorage
 
 async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, clear_after: int = 4) -> None:
     """
-    Clean up a message shortly after editing it.
+    Delete a message shortly after editing if cleaning up is on.
+
     :param client: Running pyrogram client
     :param chat_id: Chat ID
     :param message_id: Message ID

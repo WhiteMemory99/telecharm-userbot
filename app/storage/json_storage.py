@@ -31,4 +31,4 @@ class JSONStorage:
             return ujson.dump(self.data, file, indent=4)
 
 
-jstorage = JSONStorage('app/storage/storage.json')  # We insert the path to our JSON storage, created automatically
+jstorage = JSONStorage('app/storage/storage.json')  # Insert the path to our JSON storage, created automatically
