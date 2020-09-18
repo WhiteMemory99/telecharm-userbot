@@ -31,7 +31,7 @@ async def help_handler(_, message: Message):
 @Client.on_message(filters.me & filters.command('ping', prefixes='.'))
 async def ping_handler(_, message: Message):
     """
-    Count the time it takes to answer the update in ms.
+    Count the time it takes to process an update in ms.
     """
     start_time = datetime.now()
     await message.delete()
