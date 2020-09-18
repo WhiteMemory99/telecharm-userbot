@@ -2,6 +2,8 @@ from pyrogram import Client, filters
 from pyrogram.errors import FirstnameInvalid, UsernameInvalid, UsernameNotModified, UsernameOccupied
 from pyrogram.types import Message
 
+from modules import clean_up
+
 
 @Client.on_message(filters.me & filters.command(['stat', 'stats'], prefixes='.'))  # TODO: WE NEED MORE STATS!
 async def stats_handler(client: Client, message: Message):
@@ -37,6 +39,7 @@ async def stats_handler(client: Client, message: Message):
                f'Private: **{privates}**\nGroups: **{groups}**\n\nTelegram contacts: **{contacts}**'
 
     await message.edit_text(text)
+    await clean_up(client, message.chat.id, message.message_id, clear_after=15)
 
 
 @Client.on_message(filters.me & filters.command('name', prefixes='.'))
@@ -64,6 +67,8 @@ async def name_handler(client: Client, message: Message):
             await message.edit_text(f'Your name\'s been changed to:\n`{result}`')
         except FirstnameInvalid:
             await message.edit_text('Your new first name is invalid.')
+
+    await clean_up(client, message.chat.id, message.message_id)
 
 
 @Client.on_message(filters.me & filters.command('username', prefixes='.'))
@@ -94,6 +99,8 @@ async def username_handler(client: Client, message: Message):
             else:
                 await message.edit_text('This username is invalid.')
 
+    await clean_up(client, message.chat.id, message.message_id)
+
 
 @Client.on_message(filters.me & filters.command(['bio', 'about'], prefixes='.'))
 async def bio_handler(client: Client, message: Message):
@@ -112,3 +119,5 @@ async def bio_handler(client: Client, message: Message):
 
         await message.edit_text(text)
         await client.update_profile(bio=args[:70])  # Max bio length is 70 chars
+
+    await clean_up(client, message.chat.id, message.message_id)

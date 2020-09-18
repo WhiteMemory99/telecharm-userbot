@@ -2,6 +2,8 @@ from pyrogram import Client, filters
 from pyrogram.errors import RPCError
 from pyrogram.types import Message, User
 
+from modules import clean_up
+
 
 @Client.on_message(filters.me & filters.command('mention', prefixes='.'))
 async def mention_handler(client: Client, message: Message):
@@ -11,8 +13,9 @@ async def mention_handler(client: Client, message: Message):
     args = message.text.partition(' ')[2]
     if not args:
         await message.edit_text(
-            'Pass the username of the user you want to text-mention:\n`.mention @username.Any text(optional)`'
+            'Pass the username of the user you want to text-mention:\n`.mention @username.Any text(optional)`',
         )
+        await clean_up(client, message.chat.id, message.message_id)
     else:
         mention_parts = args.split('.', maxsplit=1)
         try:
@@ -31,3 +34,4 @@ async def mention_handler(client: Client, message: Message):
             await message.edit_text(link)
         except RPCError:
             await message.edit_text('Specified username is incorrect.')
+            await clean_up(client, message.chat.id, message.message_id)

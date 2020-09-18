@@ -20,16 +20,21 @@ async def purge_handler(client: Client, message: Message):
         return  # TODO: Think about channels
 
     msgs = []
-    async for msg in client.iter_history(  # noqa
-            message.chat.id,
-            offset_id=message.reply_to_message.message_id,
-            reverse=True):
-        if me_mode and msg.from_user.id != message.from_user.id:
-            continue  # Skip messages sent by other users if the me_mode is True
-        else:
-            msgs.append(msg.message_id)
-
     try:
-        await client.delete_messages(message.chat.id, message_ids=msgs[::-1])  # FIXME: Issues with 100+ msgs
+        async for msg in client.iter_history(  # noqa
+                message.chat.id,
+                offset_id=message.reply_to_message.message_id,
+                reverse=True):
+            if me_mode and msg.from_user.id != message.from_user.id:
+                continue  # Skip messages sent by other users if the me_mode is True
+            else:
+                if len(msgs) < 100:
+                    msgs.append(msg.message_id)
+                else:
+                    await client.delete_messages(message.chat.id, message_ids=msgs)
+                    msgs = []
+
+        if msgs:
+            await client.delete_messages(message.chat.id, message_ids=msgs)
     except RPCError as ex:
         logger.error(f'Could not .purge messages due to {ex}')

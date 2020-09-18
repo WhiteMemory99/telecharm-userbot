@@ -6,6 +6,8 @@ from pyrogram.errors import (ChannelPrivate, InviteHashInvalid, PeerIdInvalid, R
                              UsernameNotOccupied)
 from pyrogram.types import Chat, Message, User
 
+from modules import clean_up
+
 
 STATUS = {
     True: 'Yes',
@@ -24,8 +26,9 @@ DC_LOCATIONS = {
 @Client.on_message(filters.me & filters.command('resolve', prefixes='.'))
 async def resolve_handler(client: Client, message: Message):
     """
-    Resolve ID/Username/Invite Link, works on both users and chats. Useful to quickly get info.
+    Resolve a ID/Username/Invite Link, works on both users and chats. Useful to quickly get info.
     """
+    text = None
     entity = message.text.partition(' ')[2]
     if entity:  # Argument specified
         try:
@@ -35,16 +38,16 @@ async def resolve_handler(client: Client, message: Message):
 
             text = get_entity_info(target)
         except (UsernameNotOccupied, UsernameInvalid):
-            return await message.edit_text('Wrong **username** specified.')
+            await message.edit_text('Wrong **username** specified.')
         except PeerIdInvalid:
-            return await message.edit_text('Wrong **ID** specified.')
+            await message.edit_text('Wrong **ID** specified.')
         except InviteHashInvalid:
-            return await message.edit_text('Wrong **invitation link** specified.')
+            await message.edit_text('Wrong **invitation link** specified.')
         except ChannelPrivate:
-            return await message.edit_text('Specified target cannot be accessed.')
+            await message.edit_text('Specified target cannot be accessed.')
         except RPCError as ex:
-            logger.error(ex)
-            return await message.edit_text('Specified argument is invalid.')
+            logger.error(f'Could not resolve an entity in {ex}')
+            await message.edit_text('Specified argument is invalid.')
     else:  # Argument not specified
         if message.reply_to_message:  # It's a reply to another message
             if message.reply_to_message.from_user:
@@ -53,15 +56,19 @@ async def resolve_handler(client: Client, message: Message):
                 try:
                     text = get_entity_info(message.reply_to_message.forward_from_chat)
                 except KeyError:
-                    return await message.edit_text(
+                    await message.edit_text(
                         f'Target **{message.reply_to_message.forward_from_chat.type}** cannot be accessed.'
                     )
             else:
-                return await message.edit_text('Unable resolve this message.')
+                await message.edit_text('Unable resolve this message.')
         else:
             text = get_entity_info(message.from_user)
 
-    await message.edit_text(text, disable_web_page_preview=True)
+    if text:
+        await message.edit_text(text, disable_web_page_preview=True)
+        await clean_up(client, message.chat.id, message.message_id, clear_after=15)
+    else:
+        await clean_up(client, message.chat.id, message.message_id)
 
 
 def get_entity_info(entity: Union[User, Chat]):

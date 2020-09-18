@@ -1,40 +1,35 @@
-from datetime import datetime
-
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
 import config
+from modules import clean_up
+from storage import jstorage
 
 
 @Client.on_message(filters.me & filters.command(['start', 'help'], prefixes='.'))
-async def help_handler(_, message: Message):
+async def help_handler(client: Client, message: Message):
     """
-    Builtin help command to access command list.
+    Builtin help command to access command list and GitHub repo.
     """
     args = message.text.split(maxsplit=2)
     if 'ru' in args:  # Russian version requested
-        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help` - Показать это сообщение.\n`.ping` - Текущий ' \
-               f'пинг\n`.stats` - Статистика моего профиля.\n`.flood` - Флуд сообщениями.\n`.purge` - Очистка ' \
-               f'сообщений\n`.name` - Сменить моё имя\n`.username` - Сменить мой юзернейм\n`.bio` - Отредактировать ' \
-               f'"О себе"\n`.mention` - Текстовое упоминание\n`.resolve` - Проверить ID/Юзернейм/Приглашение\n\n' \
-               f'__[Подробнее о командах]({config.GUIDE_LINK_RU})\n[Telecharm на GitHub]({config.GITHUB_LINK})__'
+        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help` - Показать это сообщение.\n\n' \
+               f'__[Список команд]({config.GUIDE_LINK_RU})\n[Telecharm на GitHub]({config.GITHUB_LINK})__'
     else:  # English version requested
-        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n`.help ru` for Russian\n\n`.help` - Show this message.\n' \
-               f'`.ping` - Current ping\n`.stats` - My profile stats.\n`.flood` - Flood messages.\n`.purge` - Purge ' \
-               f'messages\n`.name` - Change my name\n`.username` - Change my username\n`.bio` - Edit my about info\n' \
-               f'`.mention` - Text mention\n`.resolve` - Resolve ID/Username/Invite link\n\n' \
-               f'__[More on commands]({config.GUIDE_LINK_EN})\n[Telecharm on GitHub]({config.GITHUB_LINK})__'
+        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help ru` for Russian\n`.help` - Show this message.' \
+               f'\n\n__[List of commands]({config.GUIDE_LINK_EN})\n[Telecharm on GitHub]({config.GITHUB_LINK})__'
 
     await message.edit_text(text, disable_web_page_preview=True)
+    await clean_up(client, message.chat.id, message.message_id, clear_after=15)
 
 
-@Client.on_message(filters.me & filters.command('ping', prefixes='.'))
-async def ping_handler(_, message: Message):
+@Client.on_message(filters.me & filters.command('cleanup', prefixes='.'))
+async def clean_up_switcher(_, message: Message):
     """
-    Count the time it takes to process an update in ms.
+    Turn on/off cleaning up mode that deletes messages some time after editing them.
     """
-    start_time = datetime.now()
-    await message.delete()
-    duration = datetime.now() - start_time
-    milliseconds = duration.microseconds / 1000
-    await message.reply_text(f'Ping is **{milliseconds}ms**', quote=False)
+    last_value = jstorage.data.get('clean_up', False)
+    jstorage.write('clean_up', not last_value)
+
+    status = 'off' if last_value else 'on'
+    await message.edit_text(f'Clean up is **{status}**.')

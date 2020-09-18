@@ -8,7 +8,7 @@ Currently in active WIP state, so feel free to contribute.
 2. Rename `.env.dist` to `.env` and open it.
 3. Visit https://my.telegram.org/apps and get your own `api_id` and `api_hash`.
 4. Edit `.env` file: fill in your `api_id`, `api_hash` and your phone number.
-5. Run the userbot: `python3 app`.
+5. Run the userbot: `python3 app` or any convenient way of yours.
 
 ## **Usage**
-After logging in just send `.help` command to get the available commands list in **English** and `.help ru` for **Russian**.<br />Thanks for using **Telecharm** :)
+After logging in just send `.help` command to get the available commands in **English** and `.help ru` for **Russian**.<br />Thanks for using **Telecharm** :)
