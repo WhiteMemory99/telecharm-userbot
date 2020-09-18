@@ -1,4 +1,4 @@
-pyrogram>=1.0.6
+pyrogram>=1.0.7
 envparse>=0.2.0
-loguru>=0.5.1
+loguru>=0.5.2
 tgcrypto>=1.2.1

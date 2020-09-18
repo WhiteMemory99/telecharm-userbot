@@ -1,23 +1,25 @@
 from pyrogram import Client, filters
 from pyrogram.errors import RPCError
-from pyrogram.types import Message
+from pyrogram.types import Message, User
 
 
 @Client.on_message(filters.me & filters.command('mention', prefixes='.'))
 async def mention_handler(client: Client, message: Message):
-    args = message.text.split(maxsplit=1)
-    if len(args) == 1:
+    """
+    Mention a user in any chat by their username as in some Telegram clients.
+    """
+    args = message.text.partition(' ')[2]
+    if not args:
         await message.edit_text(
             'Pass the username of the user you want to text-mention:\n`.mention @username.Any text(optional)`'
         )
     else:
-        mention_parts = args[1].split('.', maxsplit=1)
+        mention_parts = args.split('.', maxsplit=1)
         try:
-            user = await client.get_users(mention_parts[0])
-            user_name = f'{user.first_name} {user.last_name}' if user.last_name else user.first_name
-            text = user_name if len(mention_parts) == 1 else mention_parts[1]
-            link = f'<a href="tg://resolve?domain={user.username}">{text}</a>'
-            if message.entities:
+            user: User = await client.get_users(mention_parts[0])
+            text = None if len(mention_parts) == 1 else mention_parts[1]
+            link = user.mention(text)
+            if message.entities:  # Check if there's any styled text in the message.text and apply it
                 for entity in message.entities:
                     if entity.type == 'bold':
                         link = f'<b>{link}</b>'
@@ -28,4 +30,4 @@ async def mention_handler(client: Client, message: Message):
 
             await message.edit_text(link)
         except RPCError:
-            await message.edit_text('The provided username is incorrect.')
+            await message.edit_text('Specified username is incorrect.')
