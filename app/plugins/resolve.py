@@ -23,7 +23,7 @@ DC_LOCATIONS = {
 }
 
 
-@Client.on_message(filters.me & filters.command('resolve', prefixes='.'))
+@Client.on_message(filters.me & filters.command(['resolve', 'whois'], prefixes='.'))
 async def resolve_handler(client: Client, message: Message):
     """
     Resolve a ID/Username/Invite Link, works on both users and chats. Useful to quickly get info.

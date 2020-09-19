@@ -7,9 +7,9 @@ from pyrogram.errors import RPCError
 from storage import jstorage
 
 
-async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, clear_after: int = 4) -> None:
+async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, clear_after: int = 3.5) -> None:
     """
-    Delete a message shortly after editing if cleaning up is on.
+    Delete a message shortly after editing if cleaning up is enabled.
 
     :param client: Running pyrogram client
     :param chat_id: Chat ID

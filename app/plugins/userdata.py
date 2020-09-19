@@ -30,12 +30,10 @@ async def stats_handler(client: Client, message: Message):
 
     contacts = await client.get_contacts_count()
     if 'ru' in args:  # Russian version requested
-        text = f'Мой **ID**: `{message.from_user.id}`\n\nВсего чатов: **{all_chats}**\n' \
-               f'Закреплённых: **{pinned}**\nНепрочитанных: **{unread}**\nКаналов: **{channels}**\n' \
-               f'Приватных: **{privates}**\nГрупп: **{groups}**\n\nКонтактов в Telegram: **{contacts}**'
+        text = f'Всего чатов: **{all_chats}**\nЗакреплённых: **{pinned}**\nНепрочитанных: **{unread}**\nКаналов: ' \
+               f'**{channels}**\nПриватных: **{privates}**\nГрупп: **{groups}**\n\nКонтактов в Telegram: **{contacts}**'
     else:  # English version requested
-        text = f'My **ID**: `{message.from_user.id}`\n\nTotal chats: **{all_chats}**\n' \
-               f'Pinned: **{pinned}**\nUnread: **{unread}**\nChannels: **{channels}**\n' \
+        text = f'Total chats: **{all_chats}**\nPinned: **{pinned}**\nUnread: **{unread}**\nChannels: **{channels}**\n' \
                f'Private: **{privates}**\nGroups: **{groups}**\n\nTelegram contacts: **{contacts}**'
 
     await message.edit_text(text)
