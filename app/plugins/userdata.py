@@ -14,13 +14,17 @@ async def stats_handler(client: Client, message: Message):
     await message.edit_text(f'{message.text}\n__Gathering info...__')
 
     user_list = []
-    total_chats = channels = privates = groups = pinned = unread = bots = 0
+    peak_unread_chat = None
+    total_chats = channels = privates = groups = pinned = unread = peak_unread_count = bots = 0
     async for dialog in client.iter_dialogs():  # noqa
         total_chats += 1
         if dialog.is_pinned:
             pinned += 1
-        if dialog.unread_mark:
+        if dialog.unread_messages_count > 0:
             unread += 1
+            if dialog.unread_messages_count > peak_unread_count:
+                peak_unread_count = dialog.unread_messages_count
+                peak_unread_chat = dialog.chat.title
 
         if dialog.chat.type == 'channel':
             channels += 1
@@ -37,16 +41,26 @@ async def stats_handler(client: Client, message: Message):
 
     contacts = await client.get_contacts_count()
     if 'ru' in args:  # Russian version requested
+        if peak_unread_chat:
+            unread_data = f'**{peak_unread_count}** в **{peak_unread_chat}**'
+        else:
+            unread_data = f'**{peak_unread_count}**'
+
         text = f'Всего чатов: **{total_chats}**\nЗакреплённых: **{pinned}**\nНепрочитанных: **{unread}**\n' \
-               f'Каналов: **{channels}**\nПриватных: **{privates}**\nБотов: **{bots}**\n' \
-               f'Групп: **{groups}**\n\nКонтактов в Telegram: **{contacts}**'
+               f'Каналов: **{channels}**\nПриватных: **{privates}**\nБотов: **{bots}**\nГрупп: **{groups}**\n\n' \
+               f'Контактов в Telegram: **{contacts}**\nМаксимум непрочитанных за чат: {unread_data}'
     else:  # English version requested
+        if peak_unread_chat:
+            unread_data = f'**{peak_unread_count}** in **{peak_unread_chat}**'
+        else:
+            unread_data = f'**{peak_unread_count}**'
+
         text = f'Total chats: **{total_chats}**\nPinned: **{pinned}**\nUnread: **{unread}**\n' \
-               f'Channels: **{channels}**\nPrivates: **{privates}**\nBots: **{bots}**\n' \
-               f'Groups: **{groups}**\n\nTelegram contacts: **{contacts}**'
+               f'Channels: **{channels}**\nPrivates: **{privates}**\nBots: **{bots}**\nGroups: **{groups}**\n\n' \
+               f'Telegram contacts: **{contacts}**\nPeak value of unread per chat: {unread_data}'
 
     await message.edit_text(text)
-    await clean_up(client, message.chat.id, message.message_id, clear_after=15)
+    await clean_up(client, message.chat.id, message.message_id, clear_after=20)
 
 
 @Client.on_message(filters.me & filters.command('name', prefixes='.'))
