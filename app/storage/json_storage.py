@@ -11,6 +11,7 @@ class JSONStorage:
 
     def __init__(self, path: str):
         self.path = pathlib.Path(path)
+
         try:
             self.data: dict = self.read()
         except FileNotFoundError:
@@ -24,11 +25,11 @@ class JSONStorage:
             except ValueError:
                 return {}
 
-    def write(self, key: str, value: Union[str, int, bool]):
+    def set(self, key: str, value: Union[str, int, bool]):
         self.data[key] = value
 
         with self.path.open('w') as file:
             return ujson.dump(self.data, file, indent=4)
 
 
-jstorage = JSONStorage('app/storage/storage.json')  # Insert the path to our JSON storage, created automatically
+json_settings = JSONStorage('app/storage/storage.json')  # Insert the path to our JSON storage, created automatically

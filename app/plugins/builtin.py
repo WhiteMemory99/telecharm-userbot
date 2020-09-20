@@ -3,7 +3,7 @@ from pyrogram.types import Message
 
 import config
 from modules import clean_up
-from storage import jstorage
+from storage import json_settings
 
 
 @Client.on_message(filters.me & filters.command(['start', 'help'], prefixes='.'))
@@ -28,8 +28,8 @@ async def clean_up_switcher(client: Client, message: Message):
     """
     Turn on/off cleaning up mode that deletes messages some time after editing them.
     """
-    last_value = jstorage.data.get('clean_up', False)
-    jstorage.write('clean_up', not last_value)
+    last_value = json_settings.data.get('clean_up', False)
+    json_settings.set('clean_up', not last_value)
 
     status = 'off' if last_value else 'on'
     await message.edit_text(f'Clean up is **{status}**.')

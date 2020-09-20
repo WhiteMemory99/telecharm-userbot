@@ -4,7 +4,7 @@ from loguru import logger
 from pyrogram import Client, filters
 from pyrogram.errors import (ChannelPrivate, InviteHashInvalid, PeerIdInvalid, RPCError, UsernameInvalid,
                              UsernameNotOccupied)
-from pyrogram.types import Chat, Message, User
+from pyrogram.types import Chat, ChatPreview, Message, User
 
 from modules import clean_up
 
@@ -71,19 +71,22 @@ async def resolve_handler(client: Client, message: Message):
         await clean_up(client, message.chat.id, message.message_id)
 
 
-def get_entity_info(entity: Union[User, Chat]):
+def get_entity_info(entity: Union[User, Chat, ChatPreview]):
     """
     Build info text according to a specified User or Chat object and return the result.
     """
-    dc_name = f'{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}' if entity.dc_id else 'Unavailable'
-
     if isinstance(entity, User):  # It's a User object
         if entity.is_deleted:
             full_text = f'**{entity.first_name}**\n\nThis profile is deleted.'
         else:
+            dc_name = f'{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}' if entity.dc_id else 'Unavailable'
             full_text = f'**{entity.mention}**\n\n**ID**: `{entity.id}`\nType: **user**\nIs bot: **' \
                         f'{STATUS[entity.is_bot]}**\nIs scam: **{STATUS[entity.is_scam]}**\nData center: **{dc_name}**'
+    elif isinstance(entity, ChatPreview):  # It's a private chat preview
+        full_text = f'**{entity.title}**\n\nType: **{entity.type}**\nIs private: **Yes**\n' \
+                    f'Members count: **{entity.members_count}**\n\n__Join this {entity.type} to get more info.__'
     else:  # It's a Chat object
+        dc_name = f'{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}' if entity.dc_id else 'Unavailable'
         description = f'{entity.description}\n\n' if entity.description else ''
         linked_chat = f'`{entity.linked_chat.id}`' if entity.linked_chat else '**None**'
         is_private = True if not entity.username else False
@@ -91,7 +94,6 @@ def get_entity_info(entity: Union[User, Chat]):
 
         full_text = f'**{title}**\n\n{description}**ID**: `{entity.id}`\nType: **{entity.type}**\n' \
                     f'Linked chat: {linked_chat}\nIs private: **{STATUS[is_private]}**\n' \
-                    f'Is verified: **{STATUS[entity.is_verified]}**\nIs scam: **{STATUS[entity.is_scam]}**\n' \
-                    f'Data center: **{dc_name}**'
+                    f'Is scam: **{STATUS[entity.is_scam]}**\nData center: **{dc_name}**'
 
     return full_text

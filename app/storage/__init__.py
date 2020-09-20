@@ -1,4 +1,4 @@
-from .json_storage import jstorage
+from .json_storage import json_settings
 
 
 __all__ = (

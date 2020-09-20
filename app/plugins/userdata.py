@@ -5,7 +5,7 @@ from pyrogram.types import Message
 from modules import clean_up
 
 
-@Client.on_message(filters.me & filters.command(['stat', 'stats'], prefixes='.'))  # TODO: WE NEED MORE STATS!
+@Client.on_message(filters.me & filters.command(['stat', 'stats'], prefixes='.'))
 async def stats_handler(client: Client, message: Message):
     """
     Gather profile stats containing chats info to share it to anyone.
@@ -13,12 +13,13 @@ async def stats_handler(client: Client, message: Message):
     args = message.text.split(maxsplit=2)
     await message.edit_text(f'{message.text}\n__Gathering info...__')
 
-    all_chats = channels = privates = groups = pinned = unread = 0
+    user_list = []
+    total_chats = channels = privates = groups = pinned = unread = bots = 0
     async for dialog in client.iter_dialogs():  # noqa
-        all_chats += 1
+        total_chats += 1
         if dialog.is_pinned:
             pinned += 1
-        if dialog.unread_messages_count > 0:
+        if dialog.unread_mark:
             unread += 1
 
         if dialog.chat.type == 'channel':
@@ -27,14 +28,22 @@ async def stats_handler(client: Client, message: Message):
             groups += 1
         else:
             privates += 1
+            user_list.append(dialog.chat.id)
+
+    full_users = await client.get_users(user_list)
+    for user in full_users:
+        if user.is_bot:
+            bots += 1
 
     contacts = await client.get_contacts_count()
     if 'ru' in args:  # Russian version requested
-        text = f'Всего чатов: **{all_chats}**\nЗакреплённых: **{pinned}**\nНепрочитанных: **{unread}**\nКаналов: ' \
-               f'**{channels}**\nПриватных: **{privates}**\nГрупп: **{groups}**\n\nКонтактов в Telegram: **{contacts}**'
+        text = f'Всего чатов: **{total_chats}**\nЗакреплённых: **{pinned}**\nНепрочитанных: **{unread}**\n' \
+               f'Каналов: **{channels}**\nПриватных: **{privates}**\nБотов: **{bots}**\n' \
+               f'Групп: **{groups}**\n\nКонтактов в Telegram: **{contacts}**'
     else:  # English version requested
-        text = f'Total chats: **{all_chats}**\nPinned: **{pinned}**\nUnread: **{unread}**\nChannels: **{channels}**\n' \
-               f'Private: **{privates}**\nGroups: **{groups}**\n\nTelegram contacts: **{contacts}**'
+        text = f'Total chats: **{total_chats}**\nPinned: **{pinned}**\nUnread: **{unread}**\n' \
+               f'Channels: **{channels}**\nPrivates: **{privates}**\nBots: **{bots}**\n' \
+               f'Groups: **{groups}**\n\nTelegram contacts: **{contacts}**'
 
     await message.edit_text(text)
     await clean_up(client, message.chat.id, message.message_id, clear_after=15)
@@ -56,8 +65,9 @@ async def name_handler(client: Client, message: Message):
             first_name = args[0][:64]
             last_name = args[1][:64]
         else:  # A quite complex name specified, so we have to balance it a little
-            first_name = ' '.join(args[:len(args) // 2])[:64]
-            last_name = ' '.join(args[len(args) // 2:])[:64]
+            divider = len(args) // 2
+            first_name = ' '.join(args[:divider])[:64]
+            last_name = ' '.join(args[divider:])[:64]
 
         try:
             await client.update_profile(first_name=first_name, last_name=last_name)
