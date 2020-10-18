@@ -6,10 +6,10 @@ from modules import clean_up
 from storage import json_settings
 
 
-@Client.on_message(filters.me & filters.command(['start', 'help'], prefixes='.'))
-async def help_handler(client: Client, message: Message):
+@Client.on_message(filters.me & filters.command(['start', 'help', 'share'], prefixes='.'))
+async def share(client: Client, message: Message):
     """
-    Builtin help command to access command list and GitHub repo.
+    Builtin help command to access command list and GitHub repo or share this userbot.
     """
     args = message.text.split(maxsplit=2)
     if 'ru' in args:  # Russian version requested

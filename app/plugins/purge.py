@@ -5,7 +5,7 @@ from pyrogram.types import Message
 
 
 @Client.on_message(filters.me & filters.reply & filters.command('purge', prefixes='.'))
-async def purge_handler(client: Client, message: Message):
+async def purge(client: Client, message: Message):
     """
     Purge messages in any chat, supports 2 working modes: my messages and all messages.
     """

@@ -7,7 +7,7 @@ from modules import clean_up
 
 
 @Client.on_message(filters.me & filters.command('flood', prefixes='.'))
-async def flood_handler(client: Client, message: Message):
+async def flood(client: Client, message: Message):
     """
     Classic flooder. It's quite dangerous so use it carefully. I'm not responsible for any harm or account losses.
     """

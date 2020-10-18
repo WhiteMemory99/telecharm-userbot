@@ -42,7 +42,7 @@ async def stats_handler(client: Client, message: Message):
     contacts = await client.get_contacts_count()
     if 'ru' in args:  # Russian version requested
         if peak_unread_chat:
-            unread_data = f'**{peak_unread_count}** в **{peak_unread_chat}**'
+            unread_data = f'**{peak_unread_count}** в `{peak_unread_chat}`'
         else:
             unread_data = f'**{peak_unread_count}**'
 
@@ -51,7 +51,7 @@ async def stats_handler(client: Client, message: Message):
                f'Контактов в Telegram: **{contacts}**\nМаксимум непрочитанных за чат: {unread_data}'
     else:  # English version requested
         if peak_unread_chat:
-            unread_data = f'**{peak_unread_count}** in **{peak_unread_chat}**'
+            unread_data = f'**{peak_unread_count}** in `{peak_unread_chat}`'
         else:
             unread_data = f'**{peak_unread_count}**'
 

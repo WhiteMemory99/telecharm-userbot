@@ -6,7 +6,7 @@ from modules import clean_up
 
 
 @Client.on_message(filters.me & filters.command('mention', prefixes='.'))
-async def mention_handler(client: Client, message: Message):
+async def mention(client: Client, message: Message):
     """
     Mention a user in any chat by their username as in some Telegram clients.
     """
