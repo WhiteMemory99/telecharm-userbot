@@ -52,7 +52,7 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
     if with_time:
         for data in args:
             if data[:-1].isdigit() and data[-1:].lower() in MODIFIERS.keys():
-                delta, text = parse_timedelta(data)
+                timedelta, text = parse_timedelta(data)
                 break
 
     if message.reply_to_message:
