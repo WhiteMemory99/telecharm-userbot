@@ -10,4 +10,4 @@ GITHUB_LINK = 'https://github.com/WhiteMemory99/telecharm-userbot'
 GUIDE_LINK_RU = 'https://telegra.ph/Telecharm-prodvinutye-komandy-08-19'
 GUIDE_LINK_EN = 'https://telegra.ph/Telecharm-advanced-commands-08-19'
 
-TELECHARM_VERSION = '0.5.0'
+TELECHARM_VERSION = '0.5.1'
