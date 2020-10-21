@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Union
 from pyrogram.errors import RPCError
 from pyrogram.types import Message, User
 
-from modules.helper import extract_entity_text
+from utils.helper import extract_entity_text
 
 
 MODIFIERS = {

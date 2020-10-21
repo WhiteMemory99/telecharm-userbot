@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import ChatAdminRequired, RPCError, UserAdminInvalid
 from pyrogram.types import ChatPermissions, Message
 
-from modules import clean_up, parse_command
+from utils import clean_up, parse_command
 
 
 @Client.on_message(filters.me & filters.command('kick', prefixes='.') & filters.group)

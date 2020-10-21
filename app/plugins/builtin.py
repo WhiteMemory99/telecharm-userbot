@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 
 import config
-from modules import clean_up
+from utils import clean_up
 from storage import json_settings
 
 

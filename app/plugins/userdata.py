@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FirstnameInvalid, UsernameInvalid, UsernameNotModified, UsernameOccupied
 from pyrogram.types import Message
 
-from modules import clean_up
+from utils import clean_up
 
 
 @Client.on_message(filters.me & filters.command(['stat', 'stats'], prefixes='.'))

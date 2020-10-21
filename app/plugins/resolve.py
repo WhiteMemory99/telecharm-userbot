@@ -6,7 +6,7 @@ from pyrogram.errors import (ChannelPrivate, InviteHashInvalid, PeerIdInvalid, R
                              UsernameNotOccupied)
 from pyrogram.types import Chat, ChatPreview, Message, User
 
-from modules import clean_up
+from utils import clean_up
 
 
 STATUS = {
