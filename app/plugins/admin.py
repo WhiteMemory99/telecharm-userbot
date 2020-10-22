@@ -1,3 +1,4 @@
+from loguru import logger
 from pyrogram import Client, filters
 from pyrogram.errors import ChatAdminRequired, FloodWait, RPCError, UserAdminInvalid
 from pyrogram.types import ChatPermissions, Message
@@ -50,7 +51,8 @@ async def kick(client: Client, message: Message):
                 await message.edit_text(f'Kicked {parse.user.mention}.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to kick.')
-            except RPCError:
+            except RPCError as ex:
+                logger.error(f'{ex} in .kick')
                 await message.edit_text(f'Failed to kick {parse.user.mention}.')
 
     await clean_up(client, message.chat.id, message.message_id, 5)
@@ -75,7 +77,8 @@ async def ban(client: Client, message: Message):
                 await message.edit_text(f'Banned {parse.user.mention} **{parse.text}**.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to ban.')
-            except RPCError:
+            except RPCError as ex:
+                logger.error(f'{ex} in .ban')
                 await message.edit_text(f'Failed to ban {parse.user.mention}.')
 
     await clean_up(client, message.chat.id, message.message_id, 5)
@@ -102,7 +105,8 @@ async def unban(client: Client, message: Message):
                 await message.edit_text(f'Unbanned {parse.user.mention}.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to unban.')
-            except RPCError:
+            except RPCError as ex:
+                logger.error(f'{ex} in .unban')
                 await message.edit_text(f'Failed to unban {parse.user.mention}.')
 
     await clean_up(client, message.chat.id, message.message_id, 5)
@@ -127,7 +131,8 @@ async def mute(client: Client, message: Message):
                 await message.edit_text(f'Muted {parse.user.mention} **{parse.text}**.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to mute.')
-            except RPCError:
+            except RPCError as ex:
+                logger.error(f'{ex} in .mute')
                 await message.edit_text(f'Failed to mute {parse.user.mention}.')
 
     await clean_up(client, message.chat.id, message.message_id, 5)
@@ -154,7 +159,8 @@ async def unmute(client: Client, message: Message):
                 await message.edit_text(f'Unmuted {parse.user.mention}.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to unmute.')
-            except RPCError:
+            except RPCError as ex:
+                logger.error(f'{ex} in .unmute')
                 await message.edit_text(f'Failed to unmute {parse.user.mention}.')
 
     await clean_up(client, message.chat.id, message.message_id, 5)
@@ -191,7 +197,8 @@ async def pin(client: Client, message: Message):
                 await message.edit_text('Not enough rights to pin.')
             except FloodWait as ex:  # Pin has really strict limits
                 await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
-            except RPCError:
+            except RPCError as ex:
+                logger.error(f'{ex} in .pin')
                 await message.edit_text('Failed to pin this message.')
 
     await clean_up(client, message.chat.id, message.message_id)
@@ -211,7 +218,8 @@ async def unpin(client: Client, message: Message):
             await message.edit_text('Not enough rights to unpin.')
         except FloodWait as ex:  # Unpin has really strict limits
             await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
-        except RPCError:
+        except RPCError as ex:
+            logger.error(f'{ex} in .unpin')
             await message.edit_text('Failed to unpin.')
     else:
         await message.edit_text('There is no pinned message in this chat.')

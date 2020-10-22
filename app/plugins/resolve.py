@@ -46,7 +46,7 @@ async def resolve(client: Client, message: Message):
         except ChannelPrivate:
             await message.edit_text('Specified target cannot be accessed.')
         except RPCError as ex:
-            logger.error(f'Could not resolve an entity in {ex}')
+            logger.error(f'Could not resolve an entity due to {ex}')
             await message.edit_text('Specified argument is invalid.')
     else:  # Argument not specified
         if message.reply_to_message:  # It's a reply to another message
@@ -64,7 +64,7 @@ async def resolve(client: Client, message: Message):
         else:
             text = get_entity_info(message.from_user)
 
-    if text:
+    if text:  # If we successfully got the info
         await message.edit_text(text, disable_web_page_preview=True)
         await clean_up(client, message.chat.id, message.message_id, clear_after=15)
     else:

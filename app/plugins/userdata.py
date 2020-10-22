@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.errors import FirstnameInvalid, UsernameInvalid, UsernameNotModified, UsernameOccupied
+from pyrogram.errors import FirstnameInvalid, FloodWait, UsernameInvalid, UsernameNotModified, UsernameOccupied
 from pyrogram.types import Message
 
 from utils import clean_up
@@ -89,6 +89,8 @@ async def name_handler(client: Client, message: Message):
             await message.edit_text(f'Your name\'s been changed to:\n`{result}`')
         except FirstnameInvalid:
             await message.edit_text('Your new first name is invalid.')
+        except FloodWait as ex:
+            await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
 
     await clean_up(client, message.chat.id, message.message_id)
 
@@ -120,6 +122,8 @@ async def username_handler(client: Client, message: Message):
                 await message.edit_text('This username is too long.')
             else:
                 await message.edit_text('This username is invalid.')
+        except FloodWait as ex:
+            await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
 
     await clean_up(client, message.chat.id, message.message_id)
 
@@ -139,7 +143,10 @@ async def bio_handler(client: Client, message: Message):
         else:
             text = f'Your bio\'s been updated to:\n`{args[:70]}`'
 
-        await message.edit_text(text)
-        await client.update_profile(bio=args[:70])  # Max bio length is 70 chars
+        try:
+            await client.update_profile(bio=args[:70])  # Max bio length is 70 chars
+            await message.edit_text(text)
+        except FloodWait as ex:
+            await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
 
     await clean_up(client, message.chat.id, message.message_id)
