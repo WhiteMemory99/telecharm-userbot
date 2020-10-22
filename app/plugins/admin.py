@@ -5,6 +5,30 @@ from pyrogram.types import ChatPermissions, Message
 from utils import clean_up, parse_command
 
 
+MUTE_PERMS = ChatPermissions(
+    can_send_messages=False,
+    can_send_media_messages=False,
+    can_send_stickers=False,
+    can_send_animations=False,
+    can_send_games=False,
+    can_send_polls=False
+)
+
+UNMUTE_PERMS = ChatPermissions(  # We need all these perms to unmute *properly*
+    can_send_messages=True,
+    can_send_media_messages=True,
+    can_send_stickers=True,
+    can_send_animations=True,
+    can_send_games=True,
+    can_send_polls=True,
+    can_add_web_page_previews=True,
+    can_invite_users=True,
+    can_change_info=True,
+    can_pin_messages=True,
+    can_use_inline_bots=True
+)
+
+
 @Client.on_message(filters.me & filters.command('kick', prefixes='.') & filters.group)
 async def kick(client: Client, message: Message):
     """
@@ -12,7 +36,7 @@ async def kick(client: Client, message: Message):
     """
     parse = await parse_command(message, with_time=False)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a **username/mention/ID**.')
+        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot kick myself.')
@@ -39,7 +63,7 @@ async def ban(client: Client, message: Message):
     """
     parse = await parse_command(message)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a **username/mention/ID**.')
+        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot ban myself.')
@@ -64,7 +88,7 @@ async def unban(client: Client, message: Message):
     """
     parse = await parse_command(message, with_time=False)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a **username/mention/ID**.')
+        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot unban myself.')
@@ -91,24 +115,15 @@ async def mute(client: Client, message: Message):
     """
     parse = await parse_command(message)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a **username/mention/ID**.')
+        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot mute myself.')
         if parse.is_admin:
             await message.edit_text('Cannot mute admin.')
         else:
-            permissions = ChatPermissions(
-                can_send_messages=False,
-                can_send_media_messages=False,
-                can_send_stickers=False,
-                can_send_animations=False,
-                can_send_games=False,
-                can_send_polls=False
-            )
-
             try:
-                await message.chat.restrict_member(parse.user.id, permissions=permissions, until_date=parse.until_date)
+                await message.chat.restrict_member(parse.user.id, permissions=MUTE_PERMS, until_date=parse.until_date)
                 await message.edit_text(f'Muted {parse.user.mention} **{parse.text}**.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to mute.')
@@ -125,7 +140,7 @@ async def unmute(client: Client, message: Message):
     """
     parse = await parse_command(message, with_time=False)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a **username/mention/ID**.')
+        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot unmute myself.')
@@ -134,22 +149,8 @@ async def unmute(client: Client, message: Message):
         if not parse.is_restricted:
             await message.edit_text(f'{parse.user.mention} is not muted.')
         else:
-            permissions = ChatPermissions(  # We need all these perms to unmute *properly*
-                can_send_messages=True,
-                can_send_media_messages=True,
-                can_send_stickers=True,
-                can_send_animations=True,
-                can_send_games=True,
-                can_send_polls=True,
-                can_add_web_page_previews=True,
-                can_invite_users=True,
-                can_change_info=True,
-                can_pin_messages=True,
-                can_use_inline_bots=True
-            )
-
             try:
-                await message.chat.restrict_member(parse.user.id, permissions=permissions)
+                await message.chat.restrict_member(parse.user.id, permissions=UNMUTE_PERMS)
                 await message.edit_text(f'Unmuted {parse.user.mention}.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to unmute.')

@@ -109,7 +109,7 @@ def parse_timedelta(data: str) -> Tuple[datetime.timedelta, str]:
     Provide a ready-to-use timedelta extracted from a command text.
 
     :param data: Time value in format <number><modifier>
-    :return: Returns Tuple on success
+    :return:
     """
     value, modifier = (int(data[:-1]), data[-1:].lower())
     try:
@@ -120,11 +120,7 @@ def parse_timedelta(data: str) -> Tuple[datetime.timedelta, str]:
         elif duration > datetime.timedelta(days=366):
             return duration, 'forever'
         else:
-            if value > 1:
-                word = MODIFIER_NAMES[modifier] + 's'
-            else:
-                word = MODIFIER_NAMES[modifier]
-
+            word = MODIFIER_NAMES[modifier] + 's' if value > 1 else MODIFIER_NAMES[modifier]
             return duration, f'for {value} {word}'
     except OverflowError:
         return datetime.timedelta(seconds=1), 'forever'

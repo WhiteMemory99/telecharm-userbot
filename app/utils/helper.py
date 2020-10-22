@@ -28,7 +28,8 @@ async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, cl
 
 def extract_entity_text(text: str, offset: int, length: int):
     """
-    Get value of entity
+    Get the entity value
+
     :param text: Full message text
     :param offset: Entity offset
     :param length: Entity length
