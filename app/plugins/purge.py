@@ -19,7 +19,7 @@ async def purge(client: Client, message: Message):
     elif message.chat.type == 'channel':
         return  # TODO: Think about channels
 
-    msgs = []
+    message_list = []
     try:
         async for msg in client.iter_history(  # noqa
                 message.chat.id,
@@ -28,13 +28,13 @@ async def purge(client: Client, message: Message):
             if me_mode and msg.from_user.id != message.from_user.id:
                 continue  # Skip messages sent by other users if the me_mode is True
             else:
-                if len(msgs) < 100:
-                    msgs.append(msg.message_id)
+                if len(message_list) < 100:
+                    message_list.append(msg.message_id)
                 else:
-                    await client.delete_messages(message.chat.id, message_ids=msgs)
-                    msgs = []
+                    await client.delete_messages(message.chat.id, message_ids=message_list)
+                    message_list = []
 
-        if msgs:
-            await client.delete_messages(message.chat.id, message_ids=msgs)
+        if message_list:
+            await client.delete_messages(message.chat.id, message_ids=message_list)
     except RPCError as ex:
         logger.error(f'Could not .purge messages due to {ex}')

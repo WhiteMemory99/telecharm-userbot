@@ -1,6 +1,8 @@
+import asyncio
+
 from loguru import logger
 from pyrogram import Client, filters
-from pyrogram.errors import RPCError
+from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import Message
 
 from utils import clean_up
@@ -22,6 +24,9 @@ async def flood(client: Client, message: Message):
         for _ in range(int(args[1])):
             try:
                 await message.reply_text(args[2], quote=False, disable_web_page_preview=True)
+            except FloodWait as ex:
+                logger.error(f'Sleeping for {ex.x}s in .flood')
+                await asyncio.sleep(ex.x)
             except RPCError as ex:
                 logger.error(f'{ex} in .flood, stopping command!')
                 break
