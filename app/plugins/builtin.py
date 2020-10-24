@@ -2,16 +2,16 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 
 import config
-from utils import clean_up
 from storage import json_settings
+from utils import clean_up, get_args
 
 
 @Client.on_message(filters.me & filters.command(['start', 'help', 'share'], prefixes='.'))
-async def share(client: Client, message: Message):
+async def help_command(client: Client, message: Message):
     """
     Builtin help command to access command list and GitHub repo or share this userbot.
     """
-    args = message.text.split(maxsplit=2)
+    args = get_args(message.text or message.caption)
     if 'ru' in args:  # Russian version requested
         text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help` - Английская версия.\n\n' \
                f'__[Список команд]({config.GUIDE_LINK_RU})\n[Telecharm на GitHub]({config.GITHUB_LINK})__'

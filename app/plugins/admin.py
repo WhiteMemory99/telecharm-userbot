@@ -3,7 +3,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import ChatAdminRequired, FloodWait, RPCError, UserAdminInvalid
 from pyrogram.types import ChatPermissions, Message
 
-from utils import clean_up, parse_command
+from utils import clean_up, parse_command, get_args
 
 
 MUTE_PERMS = ChatPermissions(
@@ -178,7 +178,7 @@ async def pin(client: Client, message: Message):
         if full_chat.pinned_message and full_chat.pinned_message.message_id == message.reply_to_message.message_id:
             await message.edit_text('This message is already pinned.')
         else:
-            args = message.text.split(maxsplit=1)
+            args = get_args(message.text or message.caption)
             if 'loud' in args:
                 status = 'loudly'
                 is_silent = False

@@ -6,7 +6,7 @@ from pyrogram.errors import (ChannelPrivate, InviteHashInvalid, PeerIdInvalid, R
                              UsernameNotOccupied)
 from pyrogram.types import Chat, ChatPreview, Message, User
 
-from utils import clean_up
+from utils import clean_up, get_args
 
 
 STATUS = {
@@ -24,19 +24,19 @@ DC_LOCATIONS = {
 
 
 @Client.on_message(filters.me & filters.command(['resolve', 'whois'], prefixes='.'))
-async def resolve(client: Client, message: Message):
+async def resolve_command(client: Client, message: Message):
     """
     Resolve a ID/Username/Invite Link, works on both users and chats. Useful to quickly get info.
     """
-    text = None
-    entity = message.text.partition(' ')[2]
+    info = None
+    entity = get_args(message.text or message.caption, maximum=1)
     if entity:  # Argument specified
         try:
             target: Chat = await client.get_chat(entity)
             if target.type == 'private':  # Get a User object instead
                 target: User = await client.get_users(target.id)
 
-            text = get_entity_info(target)
+            info = get_entity_info(target)
         except (UsernameNotOccupied, UsernameInvalid):
             await message.edit_text('Wrong **username** specified.')
         except PeerIdInvalid:
@@ -51,10 +51,10 @@ async def resolve(client: Client, message: Message):
     else:  # Argument not specified
         if message.reply_to_message:  # It's a reply to another message
             if message.reply_to_message.from_user:
-                text = get_entity_info(message.reply_to_message.from_user)
+                info = get_entity_info(message.reply_to_message.from_user)
             elif message.reply_to_message.forward_from_chat:
                 try:
-                    text = get_entity_info(message.reply_to_message.forward_from_chat)
+                    info = get_entity_info(message.reply_to_message.forward_from_chat)
                 except KeyError:
                     await message.edit_text(
                         f'Target **{message.reply_to_message.forward_from_chat.type}** cannot be accessed.'
@@ -62,18 +62,21 @@ async def resolve(client: Client, message: Message):
             else:
                 await message.edit_text('Unable resolve this message.')
         else:
-            text = get_entity_info(message.from_user)
+            info = get_entity_info(message.from_user)
 
-    if text:  # If we successfully got the info
-        await message.edit_text(text, disable_web_page_preview=True)
+    if info:  # If we successfully got the info
+        await message.edit_text(info, disable_web_page_preview=True)
         await clean_up(client, message.chat.id, message.message_id, clear_after=15)
     else:
         await clean_up(client, message.chat.id, message.message_id)
 
 
-def get_entity_info(entity: Union[User, Chat, ChatPreview]):
+def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
     """
     Build info text according to a specified User or Chat object and return the result.
+
+    :param entity: User/Chat/ChatPreview object of the target
+    :return:
     """
     if isinstance(entity, User):  # It's a User object
         if entity.is_deleted:

@@ -2,15 +2,15 @@ from pyrogram import Client, filters
 from pyrogram.errors import RPCError
 from pyrogram.types import Message, User
 
-from utils import clean_up
+from utils import clean_up, get_args
 
 
 @Client.on_message(filters.me & filters.command('mention', prefixes='.'))
-async def mention(client: Client, message: Message):
+async def mention_command(client: Client, message: Message):
     """
     Mention a user in any chat by their username as in some Telegram clients.
     """
-    args = message.text.partition(' ')[2]
+    args = get_args(message.text or message.caption, maximum=1)
     if not args:
         await message.edit_text(
             'Pass the username of the user you want to text-mention:\n`.mention @username.Any text(optional)`',
@@ -22,8 +22,9 @@ async def mention(client: Client, message: Message):
             user: User = await client.get_users(mention_parts[0])
             text = None if len(mention_parts) == 1 else mention_parts[1]
             link = user.mention(text)
-            if message.entities:  # Check if there's any styled text in the message.text and apply it
-                for entity in message.entities:
+            entities = message.entities or message.caption_entities
+            if entities:  # Check if there's any styled text in the message.text and apply it
+                for entity in entities:
                     if entity.type == 'bold':
                         link = f'<b>{link}</b>'
                     elif entity.type == 'italic':

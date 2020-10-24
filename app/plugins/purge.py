@@ -3,13 +3,15 @@ from pyrogram import Client, filters
 from pyrogram.errors import RPCError
 from pyrogram.types import Message
 
+from utils import get_args
+
 
 @Client.on_message(filters.me & filters.reply & filters.command('purge', prefixes='.'))
-async def purge(client: Client, message: Message):
+async def purge_command(client: Client, message: Message):
     """
     Purge messages in any chat, supports 2 working modes: my messages and all messages.
     """
-    args = message.text.split(maxsplit=2)
+    args = get_args(message.text or message.caption)
     me_mode = True if 'me' in args else False
 
     if message.chat.type in ['group', 'supergroup'] and not me_mode:  # Check admin rights if we delete all messages

@@ -1,6 +1,6 @@
 import asyncio
 import sys
-from typing import Union
+from typing import List, Union
 
 from pyrogram import Client
 from pyrogram.errors import RPCError
@@ -26,7 +26,7 @@ async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, cl
             return
 
 
-def extract_entity_text(text: str, offset: int, length: int):
+def extract_entity_text(text: str, offset: int, length: int) -> str:
     """
     Get the entity value
 
@@ -41,3 +41,17 @@ def extract_entity_text(text: str, offset: int, length: int):
     entity_text = text.encode('utf-16-le')
     entity_text = entity_text[offset * 2:(offset + length) * 2]
     return entity_text.decode('utf-16-le')
+
+
+def get_args(text: str, maximum: int = 2) -> List[str]:
+    """
+    Get a command arguments.
+
+    :param text: Original text
+    :param maximum: Maximum number of list items for split, 0 or less for unlimited.
+    :return:
+    """
+    if maximum <= 0:
+        maximum = -1
+
+    return text.split(maxsplit=maximum)[1:]

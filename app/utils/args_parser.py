@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Union
 from pyrogram.errors import RPCError
 from pyrogram.types import Message, User
 
-from utils.helper import extract_entity_text
+from utils.helper import extract_entity_text, get_args
 
 
 MODIFIERS = {
@@ -45,7 +45,7 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
     :param with_time: True if you need to parse timedelta
     :return: Returns CommandArgs object on success
     """
-    args = message.text.split()[1:]
+    args = get_args(message.text or message.caption, maximum=0)
     timedelta = datetime.timedelta(seconds=1)
     text = 'forever'
 

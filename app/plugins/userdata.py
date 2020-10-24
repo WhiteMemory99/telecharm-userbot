@@ -2,16 +2,16 @@ from pyrogram import Client, filters
 from pyrogram.errors import FirstnameInvalid, FloodWait, UsernameInvalid, UsernameNotModified, UsernameOccupied
 from pyrogram.types import Message
 
-from utils import clean_up
+from utils import clean_up, get_args
 
 
 @Client.on_message(filters.me & filters.command(['stat', 'stats'], prefixes='.'))
-async def stats_handler(client: Client, message: Message):
+async def stats(client: Client, message: Message):
     """
     Gather profile stats containing chats info to share it to anyone.
     """
-    args = message.text.split(maxsplit=2)
-    await message.edit_text(f'{message.text}\n__Gathering info...__')
+    args = get_args(message.text or message.caption)
+    await message.edit_text('__Gathering info...__')
 
     user_list = []
     peak_unread_chat = None
@@ -64,11 +64,11 @@ async def stats_handler(client: Client, message: Message):
 
 
 @Client.on_message(filters.me & filters.command('name', prefixes='.'))
-async def name_handler(client: Client, message: Message):
+async def name(client: Client, message: Message):
     """
     Change my profile name, this command is flexible and has an auto-balancer for long names.
     """
-    args = message.text.split()[1:]
+    args = get_args(message.text or message.caption, maximum=0)
     if not args:
         await message.edit_text('Pass your new name.\n`.name I\'m a superman!`')
     else:
@@ -96,29 +96,29 @@ async def name_handler(client: Client, message: Message):
 
 
 @Client.on_message(filters.me & filters.command('username', prefixes='.'))
-async def username_handler(client: Client, message: Message):
+async def username(client: Client, message: Message):
     """
     Change my profile username. Supports "del" argument to delete the current username if there is one.
     """
-    username = message.text.partition(' ')[2].lstrip('@')
-    if not username:
+    new_username = get_args(message.text or message.caption, maximum=1).lstrip('@')
+    if not new_username:
         await message.edit_text('Pass your new username.\n`.username del` to delete it.')
     else:
-        if username == 'del':
-            username = None
+        if new_username == 'del':
+            new_username = None
             text = 'Your username\'s been deleted.'
         else:
-            text = f'Your username\'s been changed to:\n`@{username}`'
+            text = f'Your username\'s been changed to:\n`@{new_username}`'
 
         try:
-            await client.update_username(username)
+            await client.update_username(new_username)
             await message.edit_text(text)
         except UsernameNotModified:
             await message.edit_text('This username is not different from the current one.')
         except UsernameOccupied:
             await message.edit_text('This username is already taken.')
         except UsernameInvalid:
-            if len(username) > 32:
+            if len(new_username) > 32:
                 await message.edit_text('This username is too long.')
             else:
                 await message.edit_text('This username is invalid.')
@@ -129,11 +129,11 @@ async def username_handler(client: Client, message: Message):
 
 
 @Client.on_message(filters.me & filters.command(['bio', 'about'], prefixes='.'))
-async def bio_handler(client: Client, message: Message):
+async def bio(client: Client, message: Message):
     """
     Change my about info block. Supports "del" argument to clear the current bio.
     """
-    args = message.text.partition(' ')[2]
+    args = get_args(message.text or message.caption, maximum=1)
     if not args:
         await message.edit_text('Pass your new about info.\n`.bio del` to delete it.')
     else:
