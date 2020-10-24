@@ -1,9 +1,9 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-import config
-from storage import json_settings
-from utils import clean_up, get_args
+from app import __version__, config
+from app.storage import json_settings
+from app.utils import clean_up, get_args
 
 
 @Client.on_message(filters.me & filters.command(['start', 'help', 'share'], prefixes='.'))
@@ -13,10 +13,10 @@ async def help_command(client: Client, message: Message):
     """
     args = get_args(message.text or message.caption)
     if 'ru' in args:  # Russian version requested
-        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help` - Английская версия.\n\n' \
+        text = f'**Telecharm v{__version__}**:\n\n`.help` - Английская версия.\n\n' \
                f'__[Список команд]({config.GUIDE_LINK_RU})\n[Telecharm на GitHub]({config.GITHUB_LINK})__'
     else:  # English version requested
-        text = f'**Telecharm v{config.TELECHARM_VERSION}**:\n\n`.help ru` for Russian\n\n' \
+        text = f'**Telecharm v{__version__}**:\n\n`.help ru` for Russian\n\n' \
                f'__[List of commands]({config.GUIDE_LINK_EN})\n[Telecharm on GitHub]({config.GITHUB_LINK})__'
 
     await message.edit_text(text, disable_web_page_preview=True)

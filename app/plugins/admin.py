@@ -3,7 +3,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import ChatAdminRequired, FloodWait, RPCError, UserAdminInvalid
 from pyrogram.types import ChatPermissions, Message
 
-from utils import clean_up, parse_command, get_args
+from app.utils import clean_up, parse_command, get_args
 
 
 MUTE_PERMS = ChatPermissions(

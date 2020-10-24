@@ -5,7 +5,7 @@ from typing import List, Union
 from pyrogram import Client
 from pyrogram.errors import RPCError
 
-from storage import json_settings
+from app.storage import json_settings
 
 
 async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, clear_after: int = 3.5) -> None:

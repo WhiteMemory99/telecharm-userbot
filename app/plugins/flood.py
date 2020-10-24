@@ -5,7 +5,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import Message
 
-from utils import clean_up, get_args
+from app.utils import clean_up, get_args
 
 
 @Client.on_message(filters.me & filters.command('flood', prefixes='.'))

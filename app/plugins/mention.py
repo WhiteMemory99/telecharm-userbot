@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import RPCError
 from pyrogram.types import Message, User
 
-from utils import clean_up, get_args
+from app.utils import clean_up, get_args
 
 
 @Client.on_message(filters.me & filters.command('mention', prefixes='.'))

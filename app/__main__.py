@@ -1,6 +1,6 @@
 from pyrogram import Client
 
-import config
+from app import config
 
 
 try:
@@ -15,4 +15,5 @@ if __name__ == '__main__':
         session_name='telecharm',
         api_id=config.API_ID,
         api_hash=config.API_HASH,
+        plugins={'root': 'app/plugins'}
     ).run()

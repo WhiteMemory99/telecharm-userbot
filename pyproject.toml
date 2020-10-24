@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "telecharm"
+version = "0.6.0"
+description = "Telegram userbot"
+authors = ["Daniil Kovalenko <lisen1510@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+Pyrogram = "^1.0.7"
+envparse = "^0.2.0"
+loguru = "^0.5.3"
+TgCrypto = "^1.2.2"
+ujson = "^4.0.1"
+httpx = "^0.16.1"
+opencv-python = "^4.4.0"
+uvloop = { version = "^0.14.0", platform = "linux" }
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

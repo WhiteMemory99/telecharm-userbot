@@ -7,7 +7,7 @@ import httpx
 from pyrogram import Client, filters
 from pyrogram.types import Animation, Document, Message, Video
 
-from utils import clean_up
+from app.utils import clean_up
 
 
 API_URL = 'https://trace.moe/api/search'
