@@ -33,7 +33,7 @@ async def find_anime(client: Client, message: Message):
                 file_path = get_video_frame(file_path)
 
             await message.edit_text('__Uploading...__')
-            async with httpx.AsyncClient(timeout=7) as http_client:
+            async with httpx.AsyncClient(timeout=10) as http_client:
                 try:
                     response = await http_client.post(API_URL, files={'image': open(file_path, 'rb')})
                     response.raise_for_status()
