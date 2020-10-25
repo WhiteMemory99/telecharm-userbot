@@ -2,7 +2,7 @@ import httpx
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from app.utils.helper import clean_up, extract_entity_text
+from app.utils import clean_up, extract_entity_text
 
 
 @Client.on_message(filters.me & filters.command(['short', 'shorten', 'clck'], prefixes='.'))

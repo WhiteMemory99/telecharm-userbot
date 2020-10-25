@@ -28,7 +28,7 @@ async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, cl
 
 def extract_entity_text(text: str, offset: int, length: int) -> str:
     """
-    Get the entity value
+    Get entity value.
 
     :param text: Full message text
     :param offset: Entity offset
@@ -45,7 +45,7 @@ def extract_entity_text(text: str, offset: int, length: int) -> str:
 
 def get_args(text: str, maximum: int = 2) -> List[str]:
     """
-    Get a command arguments.
+    Get command arguments.
 
     :param text: Original text
     :param maximum: Maximum number of list items for split, 0 or less for unlimited.
