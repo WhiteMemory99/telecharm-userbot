@@ -9,11 +9,14 @@ from app.utils import clean_up, extract_entity_text
 
 @Client.on_message(filters.me & filters.command(['short', 'shorten', 'clck'], prefixes='.'))
 async def shorten_url(client: Client, message: Message):
+    """
+    Shorten URLs contained in the outgoing or reply message text.
+    """
     urls = None
     entities = message.entities or message.caption_entities
     if entities:
         urls = get_text_urls(message.text or message.caption, entities)
-    elif message.reply_to_message:
+    elif message.reply_to_message:  # Outgoing entities are empty, but there is a reply
         entities = message.reply_to_message.entities or message.reply_to_message.caption_entities
         if entities:
             urls = get_text_urls(message.reply_to_message.text or message.reply_to_message.caption, entities)
