@@ -13,11 +13,10 @@ async def shorten_url(client: Client, message: Message):
     entities = message.entities or message.caption_entities
     if entities:
         urls = get_text_urls(message.text or message.caption, entities)
-    else:
-        reply_msg = message.reply_to_message
-        entities = reply_msg.entities or reply_msg.caption_entities
+    elif message.reply_to_message:
+        entities = message.reply_to_message.entities or message.reply_to_message.caption_entities
         if entities:
-            urls = get_text_urls(reply_msg.text or reply_msg.caption, entities)
+            urls = get_text_urls(message.reply_to_message.text or message.reply_to_message.caption, entities)
 
     if urls:
         short_urls = []
