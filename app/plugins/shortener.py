@@ -23,6 +23,7 @@ async def shorten_url(client: Client, message: Message):
 
     if urls:
         short_urls = []
+        await message.edit_text('__Generating...__')
         async with httpx.AsyncClient() as http_client:
             for url in urls[:100]:
                 response = await http_client.post('https://clck.ru/--', params={'url': url})
