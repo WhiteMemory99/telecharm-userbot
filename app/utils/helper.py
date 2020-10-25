@@ -43,7 +43,7 @@ def extract_entity_text(text: str, offset: int, length: int) -> str:
     return entity_text.decode('utf-16-le')
 
 
-def get_args(text: str, maximum: int = 2) -> List[str]:
+def get_args(text: str, maximum: int = 2) -> Union[List[str], str]:
     """
     Get command arguments.
 
@@ -53,5 +53,11 @@ def get_args(text: str, maximum: int = 2) -> List[str]:
     """
     if maximum <= 0:
         maximum = -1
+    elif maximum == 1:
+        args = text.split(maxsplit=maximum)[1:]
+        if args:
+            return args[0]
+
+        return args
 
     return text.split(maxsplit=maximum)[1:]
