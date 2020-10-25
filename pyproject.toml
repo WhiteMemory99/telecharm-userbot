@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "telecharm"
-version = "0.6.0"
+version = "0.6.2"
 description = "Telegram userbot"
 authors = ["Daniil Kovalenko <lisen1510@gmail.com>"]
 license = "MIT"
