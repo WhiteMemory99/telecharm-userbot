@@ -18,8 +18,6 @@ async def purge_command(client: Client, message: Message):
         member = await message.chat.get_member(message.from_user.id)
         if not member.can_delete_messages and member.status != 'creator':
             me_mode = True  # Not enough rights, so we'll delete our messages only
-    elif message.chat.type == 'channel':
-        return  # TODO: Think about channels
 
     message_list = []
     try:
