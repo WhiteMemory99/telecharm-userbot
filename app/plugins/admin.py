@@ -169,7 +169,7 @@ async def unmute(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command('pin', prefixes='.') & filters.group)
 async def pin(client: Client, message: Message):
     """
-    Pin something by replying to the message you want to pin. Works only if you have appropriate rights.
+    Pin something by replying to it. Works only if you have appropriate rights.
     """
     if not message.reply_to_message:
         await message.edit_text('**Reply to the message** you want to pin.')
@@ -211,9 +211,18 @@ async def unpin(client: Client, message: Message):
     """
     full_chat = await client.get_chat(message.chat.id)  # Pinned message is only available through the request
     if full_chat.pinned_message is not None:
+        args = get_args(message.text or message.caption)
         try:
-            await client.unpin_chat_message(message.chat.id)
-            await message.edit_text('Unpinned the current message.')
+            if 'all' in args:
+                await client.unpin_all_chat_messages(message.chat.id)
+                await message.edit_text('Unpinned all the pinned messages.')
+            else:
+                if message.reply_to_message:
+                    await client.unpin_chat_message(message.chat.id, message.reply_to_message.message_id)
+                    await message.edit_text('Unpinned this message.')
+                else:
+                    await client.unpin_chat_message(message.chat.id, full_chat.pinned_message.message_id)
+                    await message.edit_text('Unpinned the latest pinned message.')
         except ChatAdminRequired:
             await message.edit_text('Not enough rights to unpin.')
         except FloodWait as ex:  # Unpin has really strict limits
@@ -222,6 +231,6 @@ async def unpin(client: Client, message: Message):
             logger.error(f'{ex} in .unpin')
             await message.edit_text('Failed to unpin.')
     else:
-        await message.edit_text('There is no pinned message in this chat.')
+        await message.edit_text('There is no any pinned message here.')
 
     await clean_up(client, message.chat.id, message.message_id)

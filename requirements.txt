@@ -1,8 +1,8 @@
-pyrogram>=1.0.7
+-e git://github.com/pyrogram/pyrogram.git#egg=pyrogram
 envparse>=0.2.0
 loguru>=0.5.2
 tgcrypto>=1.2.1
-ujson>=3.2.0
+ujson>=4.0.1
 httpx>=0.14.3
 opencv-python>=4.4.0
 uvloop>=0.14.0; sys_platform == 'linux'

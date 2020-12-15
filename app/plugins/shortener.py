@@ -27,7 +27,7 @@ async def shorten_url(client: Client, message: Message):
         async with httpx.AsyncClient() as http_client:
             for url in urls[:100]:
                 response = await http_client.post('https://clck.ru/--', params={'url': url})
-                short_urls.append(response.text)
+                short_urls.append(f'**-** {response.text}')
 
         await message.edit_text('\n'.join(short_urls), disable_web_page_preview=True)
     else:
