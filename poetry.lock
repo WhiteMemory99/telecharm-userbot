@@ -114,7 +114,7 @@ name = "numpy"
 version = "1.19.4"
 description = "NumPy is the fundamental package for array computing with Python."
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [[package]]
@@ -122,7 +122,7 @@ name = "opencv-python"
 version = "4.4.0.46"
 description = "Wrapper package for OpenCV python bindings."
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -162,7 +162,7 @@ pysocks = "1.7.1"
 type = "git"
 url = "https://github.com/pyrogram/pyrogram.git"
 reference = "master"
-resolved_reference = "503327c864e46c915d32760db9cdfeee04eeb73c"
+resolved_reference = "1dc4df8cb1da36730d2318a0dbaab40cb2806b79"
 
 [[package]]
 name = "pysocks"
@@ -237,10 +237,13 @@ python-versions = ">=3.5"
 [package.extras]
 dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 
+[extras]
+opencv = ["opencv-python"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a0b74b1560de6b02c042f30d3c8f7dc348ec816a1344e7577261807db88612a8"
+content-hash = "ab1f4daec6198996ce574fb476cdcb8e25216801616a1382265ec594d0b10f47"
 
 [metadata.files]
 async-lru = [

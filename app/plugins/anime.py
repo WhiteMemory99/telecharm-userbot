@@ -2,12 +2,16 @@ import os
 import tempfile
 from decimal import Decimal
 
-import cv2
 import httpx
 from pyrogram import Client, filters
 from pyrogram.types import Animation, Document, Message, Video
 
 from app.utils import clean_up
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 
 
 API_URL = 'https://trace.moe/api/search'
@@ -30,7 +34,11 @@ async def find_anime(client: Client, message: Message):
             await message.edit_text('__Downloading...__')
             file_path = await client.download_media(target_msg, file_name=os.path.join(tempdir, media.file_id))
             if isinstance(media, Animation) or isinstance(media, Video):
-                file_path = get_video_frame(file_path)
+                if cv2 is not None:
+                    file_path = get_video_frame(file_path)
+                else:
+                    await message.edit_text("This media type requires `opencv-python`.")
+                    return await clean_up(client, message.chat.id, message.message_id)
 
             await message.edit_text('__Uploading...__')
             async with httpx.AsyncClient(timeout=10) as http_client:
@@ -56,7 +64,7 @@ async def find_anime(client: Client, message: Message):
 
 def get_video_frame(file_path: str) -> str:
     """
-    Get a frame of any video or GIF with opencv.
+    Get a frame of any video or GIF with opencv. Requires opencv extras.
 
     :param file_path: Path to the file
     :return:

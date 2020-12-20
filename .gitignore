@@ -5,6 +5,7 @@ __pycache__/
 .idea/
 .vscode/
 *.log
+*.txt
 .env
 *.session
 *.session-journal
