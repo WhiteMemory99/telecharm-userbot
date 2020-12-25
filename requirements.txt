@@ -1,4 +1,4 @@
--e git://github.com/pyrogram/pyrogram.git#egg=pyrogram
+pyrogram>-1.1.0
 envparse>=0.2.0
 loguru>=0.5.2
 tgcrypto>=1.2.1
