@@ -36,7 +36,7 @@ async def execute_python(client: Client, message: Message):
                 result_type = 'Error log'
                 output = sys.stderr.getvalue().strip()
             else:
-                output = 'Nothing to show here...'
+                output = 'The script was successful...'
 
             text = '<b>Input:</b>\n<pre>{}</pre>\n\n<b>{}:</b>\n<pre>{}</pre>'.format(
                 html.escape(args, quote=False),
