@@ -3,7 +3,6 @@ import html
 import traceback
 
 from io import StringIO
-from contextlib import contextmanager
 
 from pyrogram import Client, filters
 from pyrogram.types import Message
