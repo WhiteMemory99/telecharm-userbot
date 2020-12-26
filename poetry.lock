@@ -234,7 +234,7 @@ name = "ujson"
 version = "4.0.1"
 description = "Ultra fast JSON encoder and decoder for Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [[package]]
@@ -255,7 +255,7 @@ name = "uvloop"
 version = "0.14.0"
 description = "Fast implementation of asyncio event loop on top of libuv"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -271,11 +271,12 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 
 [extras]
 opencv = ["opencv-python"]
+speedup = ["uvloop", "ujson"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "4fefc77c2092c63df9b34e94580a6b897c50c290031d0f26f5f787c8884ad7be"
+content-hash = "8ae7569c15bdc00eaa619d959d809ce84132de853f3271ba7b4d42d8ebea5368"
 
 [metadata.files]
 async-lru = [

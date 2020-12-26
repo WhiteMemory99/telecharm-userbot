@@ -1,7 +1,10 @@
 import pathlib
 from typing import Union
 
-import ujson
+try:
+    import ujson as json
+except ImportError:
+    import json
 
 
 class JSONStorage:
@@ -21,7 +24,7 @@ class JSONStorage:
     def read(self):
         with self.path.open('r') as file:
             try:
-                return ujson.load(file)
+                return json.load(file)
             except ValueError:
                 return {}
 
@@ -29,7 +32,7 @@ class JSONStorage:
         self.data[key] = value
 
         with self.path.open('w') as file:
-            return ujson.dump(self.data, file, indent=4)
+            return json.dump(self.data, file, indent=4)
 
 
 json_settings = JSONStorage('app/storage/storage.json')  # Insert the path to our JSON storage, created automatically

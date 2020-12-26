@@ -5,4 +5,3 @@ loguru>=0.5.2
 tgcrypto>=1.2.1
 ujson>=4.0.1
 httpx>=0.14.3
-uvloop>=0.14.0; sys_platform == 'linux'
