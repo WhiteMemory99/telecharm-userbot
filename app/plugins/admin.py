@@ -75,6 +75,12 @@ async def ban(client: Client, message: Message):
             try:
                 await message.chat.kick_member(parse.user.id, until_date=parse.until_date)
                 await message.edit_text(f'Banned {parse.user.mention} **{parse.text}**.')
+                
+                if message.reply_to_message:
+                    try:
+                        await client.delete_messages(message.chat.id, message.reply_to_message.message_id)
+                    except RPCError:
+                        pass
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to ban.')
             except RPCError as ex:
