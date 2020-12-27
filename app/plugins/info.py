@@ -1,8 +1,7 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from app import __version__, config
-from app.storage import json_settings
+from app import __version__, config, SysInfo
 from app.utils import clean_up, get_args
 
 
@@ -23,14 +22,10 @@ async def help_command(client: Client, message: Message):
     await clean_up(client, message.chat.id, message.message_id, clear_after=15)
 
 
-@Client.on_message(filters.me & filters.command('cleanup', prefixes='.'))
-async def clean_up_switcher(client: Client, message: Message):
+@Client.on_message(filters.me & filters.command('sys', prefixes='.'))
+async def system_information(client: Client, message: Message):
     """
-    Turn on/off cleaning up mode that deletes messages some time after editing them.
+    Show some info about the current system and Telecharm components.
     """
-    last_value = json_settings.data.get('clean_up', False)
-    json_settings.set('clean_up', not last_value)
+    await message.edit_text(f'**My system info:**\n\n{str(SysInfo())}')
 
-    status = 'off' if last_value else 'on'
-    await message.edit_text(f'Clean up is **{status}**.')
-    await clean_up(client, message.chat.id, message.message_id)
