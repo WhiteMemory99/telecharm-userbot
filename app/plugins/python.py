@@ -27,10 +27,10 @@ async def execute_python(client: Client, message: Message):
             sys.stderr = StringIO()
             exec(args, globals(), locals())
 
-            raw_output = sys.stdout.getvalue().split('\n') if sys.stdout.getvalue() else None
+            raw_output = sys.stdout.getvalue().strip().split('\n') if sys.stdout.getvalue() else None
             if raw_output:
-                output = '\n'.join(raw_output[:6])  # Limit the output length to 6 rows
-                if len(raw_output) > 6:
+                output = '\n'.join(raw_output[:7])  # Limit the output length
+                if len(raw_output) > 7:
                     output += '\n...'
             elif sys.stderr.getvalue():  # In case we have something in our stderr, we treat it as an error
                 result_type = 'Error log'

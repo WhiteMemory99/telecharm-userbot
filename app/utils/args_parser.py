@@ -1,3 +1,4 @@
+import re
 import datetime
 from dataclasses import dataclass
 from typing import Optional, Tuple, Union
@@ -35,6 +36,9 @@ class CommandArgs:
     is_member: bool = False
     is_kicked: bool = False
     is_restricted: bool = False
+    
+    
+TIMEDELTA_PATTERN = re.compile(r'\b(?P<timedelta>\d+[smhdw])\b')
 
 
 async def parse_command(message: Message, with_time: bool = True) -> Optional[CommandArgs]:
@@ -45,31 +49,30 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
     :param with_time: True if you need to parse timedelta
     :return: Returns CommandArgs object on success
     """
-    args = get_args(message.text or message.caption, maximum=0)
     timedelta = datetime.timedelta(seconds=1)
-    text = 'forever'
-
+    response_text = 'forever'
     if with_time:
-        for data in args:
-            if data[:-1].isdigit() and data[-1:].lower() in MODIFIERS.keys():
-                timedelta, text = parse_timedelta(data)
-                break
-
-    if message.reply_to_message:
-        return await build_args(message, message.reply_to_message.from_user.id, timedelta, text)
+        time_match = TIMEDELTA_PATTERN.search(message.text)
+        if time_match:
+            timedelta, response_text = parse_timedelta(time_match.group('timedelta'))
 
     entities = message.entities or message.caption_entities
-    if entities:
+    if message.reply_to_message:
+        return await build_args(message, message.reply_to_message.from_user.id, timedelta, response_text)
+    elif entities:
         for entity in entities:  # Look for mentions or text mentions
             if entity.type == 'mention':
                 username = extract_entity_text(message.text or message.caption, entity.offset, entity.length)
-                return await build_args(message, username, timedelta, text)
+                return await build_args(message, username, timedelta, response_text)
             elif entity.type == 'text_mention':
-                return await build_args(message, entity.user.id, timedelta, text)
-        else:
-            for item in args:  # Look for IDs in the split text
-                if item.isdigit() and len(item) <= 12:
-                    return await build_args(message, int(item), timedelta, text)
+                return await build_args(message, entity.user.id, timedelta, response_text)
+            
+    args = get_args(message.text or message.caption, maximum=0)
+    for item in args[:5]:  # Look for IDs in the args
+        try:
+            return await build_args(message, int(item), timedelta, response_text)
+        except ValueError:
+            continue
 
     return None
 
