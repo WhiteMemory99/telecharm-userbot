@@ -85,8 +85,8 @@ def get_anime_info(response: dict) -> str:
     :param response: JSON response
     :return:
     """
-    japanese_title = response['title_romaji']
-    english_title = response['title_english']
+    japanese_title = html.escape(response['title_romaji'], False)
+    english_title = html.escape(response['title_english'], False)
     episode = response['episode']
     is_nsfw = 'Yes' if response['is_adult'] else 'No'
 
@@ -112,4 +112,4 @@ def get_anime_info(response: dict) -> str:
     warn = ', <i>probably wrong</i>' if accuracy < 87 else ''
     full_text = f'{title_block}\n\nNSFW: <b>{is_nsfw}</b>\nAccuracy: <b>{accuracy}%</b>{warn}{episode}\n\n{link_block}'
 
-    return html.escape(full_text, False)
+    return full_text
