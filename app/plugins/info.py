@@ -20,9 +20,10 @@ async def help_command(client: Client, message: Message):
 
 
 @Client.on_message(filters.me & filters.command('sys', prefixes='.'))
-async def system_information(_, message: Message):
+async def system_information(client: Client, message: Message):
     """
     Show some info about the current system and Telecharm components.
     """
     await message.edit_text(str(SysInfo()))
+    await clean_up(client, message.chat.id, message.message_id, clear_after=10)
 
