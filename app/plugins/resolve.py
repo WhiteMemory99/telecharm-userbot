@@ -94,7 +94,7 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
         description = f'{html.escape(entity.description, False)}\n\n' if entity.description else ''
         linked_chat = f'<code>{entity.linked_chat.id}</code>' if entity.linked_chat else '<b>None</b>'
         is_private = True if not entity.username else False
-        title = f'<a href="https://t.me/{entity.username}">{entity.title}</a>' if entity.username else entity.title
+        title = f'<a href="https://t.me/{entity.username}">{entity.title}</a>' if entity.username else html.escape(entity.title, False)
 
         full_text = f'<b>{title}</b>\n\n{description}<b>ID</b>: <code>{entity.id}</code>\nType: <b>{entity.type}</b>\n' \
                     f'Linked chat: {linked_chat}\nIs private: <b>{STATUS[is_private]}</b>\n' \
