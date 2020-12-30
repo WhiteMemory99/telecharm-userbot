@@ -43,18 +43,18 @@ class SysInfo:
         return 'Full'
 
     def collect(self):
-        yield f'**{platform.python_implementation()}:** `{self.python}`'
-        yield f'**System:** `{self.os}`'
-        yield f'**pyrogram:** `{self.pyrogram}`'
+        yield f'<b>{platform.python_implementation()}:</b> <code>{self.python}</code>'
+        yield f'<b>System:</b> <code>{self.os}</code>'
+        yield f'<b>pyrogram:</b> <code>{self.pyrogram}</code>'
 
         uvloop = self.uvloop
-        yield f'**uvloop:** `{uvloop}`'
+        yield f'<b>uvloop:</b> <code>{uvloop}</code>'
 
         json_mode = self.json_mode
-        yield f'**JSON module:** `{json_mode}`'
+        yield f'<b>JSON module:</b> <code>{json_mode}</code>'
 
         anime = self.anime
-        yield f'**.anime features:** `{anime}`'
+        yield f'<b>.anime features:</b> <code>{anime}</code>'
 
     def __str__(self):
         return '\n'.join(self.collect())
