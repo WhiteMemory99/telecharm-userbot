@@ -1,3 +1,4 @@
+import html
 import asyncio
 
 from loguru import logger
@@ -16,14 +17,15 @@ async def flood_command(client: Client, message: Message):
     args = get_args(message.text or message.caption)
     if len(args) != 2 or not args[0].isdigit():  # Not enough arguments
         await message.edit_text(
-            'Pass the number of messages and the text that will be repeated.\n\n`.flood 3 we are victors!`'
+            'Pass the number of messages and the text that will be repeated.\n\n<code>.flood 3 we are victors!</code>'
         )
         await clean_up(client, message.chat.id, message.message_id)
     else:
-        await message.edit_text(args[1])  # Edit the message with .flood command.
+        text_to_flood = html.escape(args[1], False)
+        await message.edit_text(text_to_flood)  # Edit the message with .flood command.
         for _ in range(int(args[0]) - 1):
             try:
-                await message.reply_text(args[1], quote=False, disable_web_page_preview=True)
+                await message.reply_text(text_to_flood, quote=False, disable_web_page_preview=True)
             except FloodWait as ex:
                 logger.error(f'Sleeping for {ex.x} seconds in .flood')
                 await asyncio.sleep(ex.x)

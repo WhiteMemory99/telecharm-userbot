@@ -14,5 +14,5 @@ async def clean_up_switcher(client: Client, message: Message):
     json_settings.set('clean_up', not last_value)
 
     status = 'off' if last_value else 'on'
-    await message.edit_text(f'Clean up is **{status}**.')
+    await message.edit_text(f'Clean up is <b>{status}</b>.')
     await clean_up(client, message.chat.id, message.message_id)

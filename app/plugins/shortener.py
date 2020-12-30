@@ -7,7 +7,7 @@ from pyrogram.types import Message, MessageEntity
 from app.utils import clean_up, extract_entity_text
 
 
-@Client.on_message(filters.me & filters.command(['short', 'shorten', 'clck'], prefixes='.'))
+@Client.on_message(filters.me & filters.command(['short', 'clck'], prefixes='.'))
 async def shorten_url(client: Client, message: Message):
     """
     Shorten URLs contained in the outgoing or reply message text.
@@ -23,15 +23,15 @@ async def shorten_url(client: Client, message: Message):
 
     if urls:
         short_urls = []
-        await message.edit_text('__Generating...__')
+        await message.edit_text('<i>Generating links...</i>')
         async with httpx.AsyncClient() as http_client:
             for url in urls[:100]:
                 response = await http_client.post('https://clck.ru/--', params={'url': url})
-                short_urls.append(f'**-** {response.text}')
+                short_urls.append(f'<b>-</b> {response.text}')
 
         await message.edit_text('\n'.join(short_urls), disable_web_page_preview=True)
     else:
-        await message.edit_text('**Reply to message** or provide a **link**, supports up to 100 links.')
+        await message.edit_text('<b>Reply to message</b> or provide a <b>link</b>, supports up to 100 links.')
         await clean_up(client, message.chat.id, message.message_id)
 
 

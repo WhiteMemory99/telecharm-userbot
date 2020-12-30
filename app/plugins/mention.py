@@ -13,7 +13,7 @@ async def mention_command(client: Client, message: Message):
     args = get_args(message.text or message.caption, maximum=1)
     if not args:
         await message.edit_text(
-            'Pass the username of the user you want to text-mention:\n`.mention @username.Any text(optional)`',
+            'Pass the user you want to text-mention:\n<code>.mention @username.Optional text</code>',
         )
         await clean_up(client, message.chat.id, message.message_id)
     else:

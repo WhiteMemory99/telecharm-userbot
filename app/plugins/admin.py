@@ -33,11 +33,11 @@ UNMUTE_PERMS = ChatPermissions(  # We need all these perms to unmute *properly*
 @Client.on_message(filters.me & filters.command('kick', prefixes='.') & filters.group)
 async def kick(client: Client, message: Message):
     """
-    Kick a user by their ID/username/mention or reply. Works only if you have appropriate rights.
+    Kick a user by their ID/username/mention or reply.
     """
     parse = await parse_command(message, with_time=False)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
+        await message.edit_text('<b>Reply to message</b> or provide a valid <b>username/mention/ID</b>.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot kick myself.')
@@ -61,11 +61,11 @@ async def kick(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command('ban', prefixes='.') & filters.group)
 async def ban(client: Client, message: Message):
     """
-    Ban a user by their ID/username/mention or reply. Works only if you have appropriate rights.
+    Ban a user by their ID/username/mention or reply.
     """
     parse = await parse_command(message)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
+        await message.edit_text('<b>Reply to message</b> or provide a valid <b>username/mention/ID</b>.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot ban myself.')
@@ -74,7 +74,7 @@ async def ban(client: Client, message: Message):
         else:
             try:
                 await message.chat.kick_member(parse.user.id, until_date=parse.until_date)
-                await message.edit_text(f'Banned {parse.user.mention} **{parse.text}**.')
+                await message.edit_text(f'Banned {parse.user.mention} <b>{parse.text}</b>.')
                 
                 if message.reply_to_message:
                     try:
@@ -93,11 +93,11 @@ async def ban(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command('unban', prefixes='.') & filters.group)
 async def unban(client: Client, message: Message):
     """
-    Unban a user by their ID/username/mention or reply. Works only if you have appropriate rights.
+    Unban a user by their ID/username/mention or reply.
     """
     parse = await parse_command(message, with_time=False)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
+        await message.edit_text('<b>Reply to message</b> or provide a valid <b>username/mention/ID</b>.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot unban myself.')
@@ -121,11 +121,11 @@ async def unban(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command(['mute', 'ro'], prefixes='.') & filters.group)
 async def mute(client: Client, message: Message):
     """
-    Mute a user by their ID/username/mention or reply. Works only if you have appropriate rights.
+    Mute a user by their ID/username/mention or reply.
     """
     parse = await parse_command(message)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
+        await message.edit_text('<b>Reply to message</b> or provide a valid <b>username/mention/ID</b>.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot mute myself.')
@@ -134,7 +134,7 @@ async def mute(client: Client, message: Message):
         else:
             try:
                 await message.chat.restrict_member(parse.user.id, permissions=MUTE_PERMS, until_date=parse.until_date)
-                await message.edit_text(f'Muted {parse.user.mention} **{parse.text}**.')
+                await message.edit_text(f'Muted {parse.user.mention} <b>{parse.text}</b>.')
             except (ChatAdminRequired, UserAdminInvalid):
                 await message.edit_text('Not enough rights to mute.')
             except RPCError as ex:
@@ -147,11 +147,11 @@ async def mute(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command(['unmute', 'unro'], prefixes='.') & filters.group)
 async def unmute(client: Client, message: Message):
     """
-    Unmute a user by their ID/username/mention or reply. Works only if you have appropriate rights.
+    Unmute a user by their ID/username/mention or reply.
     """
     parse = await parse_command(message, with_time=False)
     if parse is None:
-        await message.edit_text('**Reply to message** or provide a valid **username/mention/ID**.')
+        await message.edit_text('<b>Reply to message</b> or provide a valid <b>username/mention/ID</b>.')
     else:
         if parse.is_self:
             await message.edit_text('Cannot unmute myself.')
@@ -175,10 +175,10 @@ async def unmute(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command('pin', prefixes='.') & filters.group)
 async def pin(client: Client, message: Message):
     """
-    Pin something by replying to it. Works only if you have appropriate rights.
+    Pin a message by replying to it.
     """
     if not message.reply_to_message:
-        await message.edit_text('**Reply to the message** you want to pin.')
+        await message.edit_text('<b>Reply to the message</b> you want to pin.')
     else:
         full_chat = await client.get_chat(message.chat.id)  # Pinned message is only available through the request
         if full_chat.pinned_message and full_chat.pinned_message.message_id == message.reply_to_message.message_id:
@@ -198,11 +198,11 @@ async def pin(client: Client, message: Message):
                     message.reply_to_message.message_id,
                     disable_notification=is_silent
                 )
-                await message.edit_text(f'Pinned the message **{status}**.')
+                await message.edit_text(f'Pinned the message <b>{status}</b>.')
             except ChatAdminRequired:
                 await message.edit_text('Not enough rights to pin.')
             except FloodWait as ex:  # Pin has really strict limits
-                await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
+                await message.edit_text(f'<b>FloodWait</b>, retry in <code>{ex.x}</code> seconds.')
             except RPCError as ex:
                 logger.error(f'{ex} in .pin')
                 await message.edit_text('Failed to pin this message.')
@@ -213,7 +213,7 @@ async def pin(client: Client, message: Message):
 @Client.on_message(filters.me & filters.command('unpin', prefixes='.') & filters.group)
 async def unpin(client: Client, message: Message):
     """
-    Unpin the currently pinned message. Works only if you have appropriate rights.
+    Unpin the currently pinned message.
     """
     full_chat = await client.get_chat(message.chat.id)  # Pinned message is only available through the request
     if full_chat.pinned_message is not None:
@@ -232,7 +232,7 @@ async def unpin(client: Client, message: Message):
         except ChatAdminRequired:
             await message.edit_text('Not enough rights to unpin.')
         except FloodWait as ex:  # Unpin has really strict limits
-            await message.edit_text(f'**FloodWait**, retry in `{ex.x}` seconds.')
+            await message.edit_text(f'<b>FloodWait</b>, retry in <code>{ex.x}</code> seconds.')
         except RPCError as ex:
             logger.error(f'{ex} in .unpin')
             await message.edit_text('Failed to unpin.')

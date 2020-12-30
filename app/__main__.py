@@ -17,5 +17,6 @@ if __name__ == '__main__':
         session_name=Path(__file__).parent.name,
         api_id=config.API_ID,
         api_hash=config.API_HASH,
-        plugins={'root': 'app/plugins'}
+        plugins={'root': 'app/plugins'},
+        parse_mode="html"
     ).run()

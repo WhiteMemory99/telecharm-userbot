@@ -39,15 +39,15 @@ async def execute_python(client: Client, message: Message):
                 output = 'The script was successful...'
 
             text = '<b>Input:</b>\n<pre>{}</pre>\n\n<b>{}:</b>\n<pre>{}</pre>'.format(
-                html.escape(args, quote=False),
+                html.escape(args, False),
                 result_type,
-                html.escape(output, quote=False)
+                html.escape(output, False)
             )
         except Exception:
             etype, evalue, _ = sys.exc_info()
             text = '<b>Input:</b>\n<pre>{}</pre>\n\n<b>Error log:</b>\n<pre>{}</pre>'.format(
-                html.escape(args, quote=False),
-                html.escape(''.join(traceback.format_exception_only(etype, evalue)).strip(), quote=False)  # A short message
+                html.escape(args, False),
+                html.escape(''.join(traceback.format_exception_only(etype, evalue)).strip(), False)  # A short message
             )
         finally:  # Always return to original stdout and stderr
             sys.stdout = old_stdout
@@ -56,5 +56,5 @@ async def execute_python(client: Client, message: Message):
         clear_timeout = 3.5
         text = 'Write the <b>python code</b> to be executed.'
         
-    await message.edit_text(text, parse_mode="HTML")
+    await message.edit_text(text)
     await clean_up(client, message.chat.id, message.message_id, clear_after=clear_timeout)

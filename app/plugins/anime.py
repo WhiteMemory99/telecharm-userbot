@@ -1,4 +1,5 @@
 import os
+import html
 import tempfile
 from decimal import Decimal
 
@@ -28,29 +29,28 @@ async def find_anime(client: Client, message: Message):
     media = target_msg.photo or target_msg.video or target_msg.animation or target_msg.document
 
     if media is None or (isinstance(media, Document) and 'image' not in media.mime_type):
-        await message.edit_text('A photo, video, GIF or **image** document is required.')
+        await message.edit_text('A photo, video, GIF or <b>image</b> document is required.')
     else:
         with tempfile.TemporaryDirectory() as tempdir:
-            await message.edit_text('__Downloading...__')
+            await message.edit_text('<i>Processing...</i>')
             file_path = await client.download_media(target_msg, file_name=os.path.join(tempdir, media.file_id))
             if isinstance(media, Animation) or isinstance(media, Video):
                 if cv2 is not None:
                     file_path = get_video_frame(file_path)
                 else:
-                    await message.edit_text("This media type requires `opencv-python`.")
+                    await message.edit_text("This media type requires <code>opencv-python</code>.")
                     return await clean_up(client, message.chat.id, message.message_id)
 
-            await message.edit_text('__Uploading...__')
             async with httpx.AsyncClient(timeout=10) as http_client:
                 try:
                     response = await http_client.post(API_URL, files={'image': open(file_path, 'rb')})
                     response.raise_for_status()
                     answer = response.json()
                 except httpx.ReadTimeout:
-                    answer = 'Failed to get info about this anime:\n`Read Timeout`'
+                    answer = 'Failed to get info about this anime:\n<code>Read Timeout</code>'
                 except httpx.HTTPStatusError as ex:
                     description = httpx.codes.get_reason_phrase(ex.response.status_code)
-                    answer = f'Failed to get info about this anime:\n`{description}`'
+                    answer = f'Failed to get info about this anime:\n<code>{description}</code>'
 
         if isinstance(answer, str):  # Error
             await message.edit_text(answer)
@@ -91,25 +91,25 @@ def get_anime_info(response: dict) -> str:
     is_nsfw = 'Yes' if response['is_adult'] else 'No'
 
     if japanese_title == english_title:
-        title_block = f'**Title:** `{japanese_title}`'
+        title_block = f'<b>Title:</b> <code>{japanese_title}</code>'
     else:
-        title_block = f'**English title:** `{english_title}`\n**Japanese title:** `{japanese_title}`'
+        title_block = f'<b>English title:</b> <code>{english_title}</code>\n<b>Japanese title:</b> <code>{japanese_title}</code>'
 
     if episode:
         minutes, seconds = divmod(int(response['at']), 60)
-        episode = f'\nEpisode **{episode}**, at **~{minutes:02d}:{seconds:02d}**'
+        episode = f'\nEpisode <b>{episode}</b>, at <b>~{minutes:02d}:{seconds:02d}</b>'
     else:
         episode = ''
 
     anilist = ANILIST_URL.format(anime_id=response['anilist_id'])
     if response['mal_id']:
         myanimelist = MAL_URL.format(anime_id=response['mal_id'])
-        link_block = f'**[Watch on MyAnimeList]({myanimelist})\n[Watch on Anilist]({anilist})**'
+        link_block = f'<b><a href="{myanimelist}">Watch on MyAnimeList</a>\n<a href="{anilist}">Watch on Anilist</a></b>'
     else:
-        link_block = f'**[Watch on Anilist]({anilist})**'
+        link_block = f'<b><a href="{anilist}">Watch on Anilist</a></b>'
 
     accuracy = (Decimal(response['similarity']) * 100).quantize(Decimal('.01'))
-    warn = ', __probably wrong__' if accuracy < 87 else ''
-    full_text = f'{title_block}\n\nNSFW: **{is_nsfw}**\nAccuracy: **{accuracy}%**{warn}{episode}\n\n{link_block}'
+    warn = ', <i>probably wrong</i>' if accuracy < 87 else ''
+    full_text = f'{title_block}\n\nNSFW: <b>{is_nsfw}</b>\nAccuracy: <b>{accuracy}%</b>{warn}{episode}\n\n{link_block}'
 
-    return full_text
+    return html.escape(full_text, False)
