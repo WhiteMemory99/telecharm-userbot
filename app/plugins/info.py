@@ -11,7 +11,8 @@ async def help_command(client: Client, message: Message):
     Builtin help command to access command list and GitHub repo or share this userbot.
     """
     await message.edit_text(
-        f'<b>Telecharm v{__version__}</b>:\n\n<i><a href="{config.GUIDE_LINK_EN}">List of commands</a>'
+        f'<b>Telecharm v{__version__}</b>:\n\nFast and simple Telegram userbot based on pyrogram.'
+        f'\n\n<i><a href="{config.GUIDE_LINK_EN}">List of commands</a>'
         f'\n<a href="{config.GITHUB_LINK}">Telecharm on GitHub</a></i>', 
         disable_web_page_preview=True
     )
