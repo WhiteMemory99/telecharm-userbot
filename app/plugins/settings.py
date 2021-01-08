@@ -10,7 +10,7 @@ async def clean_up_switcher(client: Client, message: Message):
     """
     Turn on/off cleaning up mode that deletes messages some time after editing them.
     """
-    last_value = json_settings.data.get('clean_up', False)
+    last_value = json_settings.data.get('clean_up')
     json_settings.set('clean_up', not last_value)
 
     status = 'off' if last_value else 'on'
