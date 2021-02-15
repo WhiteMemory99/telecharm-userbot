@@ -18,11 +18,11 @@ class JSONStorage:
         try:
             self.data: dict = self.read()
         except FileNotFoundError:
-            with self.path.open('w'):
+            with self.path.open("w"):
                 self.data: dict = {}
 
     def read(self):
-        with self.path.open('r') as file:
+        with self.path.open("r") as file:
             try:
                 return json.load(file)
             except ValueError:
@@ -31,8 +31,8 @@ class JSONStorage:
     def set(self, key: str, value: Union[str, int, bool]):
         self.data[key] = value
 
-        with self.path.open('w') as file:
+        with self.path.open("w") as file:
             return json.dump(self.data, file, indent=4)
 
 
-json_settings = JSONStorage('app/storage/storage.json')  # Insert the path to our JSON storage, created automatically
+json_settings = JSONStorage("app/storage/storage.json")  # Insert the path to our JSON storage, created automatically

@@ -1,5 +1,5 @@
-import re
 import datetime
+import re
 from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
@@ -8,22 +8,15 @@ from pyrogram.types import Message, User
 
 from app.utils.helper import extract_entity_text, get_args
 
-
 MODIFIERS = {
     "w": datetime.timedelta(weeks=1),
     "d": datetime.timedelta(days=1),
     "h": datetime.timedelta(hours=1),
     "m": datetime.timedelta(minutes=1),
-    "s": datetime.timedelta(seconds=1)
+    "s": datetime.timedelta(seconds=1),
 }
 
-MODIFIER_NAMES = {
-    "w": 'week',
-    "d": 'day',
-    "h": 'hour',
-    "m": 'minute',
-    "s": 'second'
-}
+MODIFIER_NAMES = {"w": "week", "d": "day", "h": "hour", "m": "minute", "s": "second"}
 
 
 @dataclass
@@ -36,9 +29,9 @@ class CommandArgs:
     is_member: bool = False
     is_kicked: bool = False
     is_restricted: bool = False
-    
-    
-TIMEDELTA_PATTERN = re.compile(r'\b(?P<timedelta>\d+[smhdw])\b')
+
+
+TIMEDELTA_PATTERN = re.compile(r"\b(?P<timedelta>\d+[smhdw])\b")
 
 
 async def parse_command(message: Message, with_time: bool = True) -> Optional[CommandArgs]:
@@ -50,23 +43,23 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
     :return: Returns CommandArgs object on success
     """
     timedelta = datetime.timedelta(seconds=1)
-    response_text = 'forever'
+    response_text = "forever"
     if with_time:
         time_match = TIMEDELTA_PATTERN.search(message.text)
         if time_match:
-            timedelta, response_text = parse_timedelta(time_match.group('timedelta'))
+            timedelta, response_text = parse_timedelta(time_match.group("timedelta"))
 
     entities = message.entities or message.caption_entities
     if message.reply_to_message:
         return await build_args(message, message.reply_to_message.from_user.id, timedelta, response_text)
     elif entities:
         for entity in entities:  # Look for mentions or text mentions
-            if entity.type == 'mention':
+            if entity.type == "mention":
                 username = extract_entity_text(message.text or message.caption, entity.offset, entity.length)
                 return await build_args(message, username, timedelta, response_text)
-            elif entity.type == 'text_mention':
+            elif entity.type == "text_mention":
                 return await build_args(message, entity.user.id, timedelta, response_text)
-            
+
     args = get_args(message.text or message.caption, maximum=0)
     for item in args[:5]:  # Look for IDs in the args
         try:
@@ -78,10 +71,8 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
 
 
 async def build_args(
-        message: Message,
-        user_id: Union[int, str],
-        duration: datetime.timedelta,
-        text: str) -> Optional[CommandArgs]:
+    message: Message, user_id: Union[int, str], duration: datetime.timedelta, text: str
+) -> Optional[CommandArgs]:
     """
     Build a ready-to-use helper object to use in commands and get useful info.
 
@@ -98,10 +89,10 @@ async def build_args(
             until_date=int((datetime.datetime.now() + duration).timestamp()),
             text=text,
             is_self=member.user.id == message.from_user.id,
-            is_admin=member.status in ('administrator', 'creator'),
-            is_member=member.is_member if member.status in ('restricted', 'kicked') else True,
-            is_kicked=member.status == 'kicked',
-            is_restricted=member.status == 'restricted',
+            is_admin=member.status in ("administrator", "creator"),
+            is_member=member.is_member if member.status in ("restricted", "kicked") else True,
+            is_kicked=member.status == "kicked",
+            is_restricted=member.status == "restricted",
         )
     except RPCError:
         return None
@@ -119,11 +110,11 @@ def parse_timedelta(data: str) -> Tuple[datetime.timedelta, str]:
         duration = datetime.timedelta()
         duration += value * MODIFIERS[modifier]
         if duration <= datetime.timedelta(seconds=30):
-            return datetime.timedelta(seconds=30), 'for 30 seconds'
+            return datetime.timedelta(seconds=30), "for 30 seconds"
         elif duration > datetime.timedelta(days=366):
-            return duration, 'forever'
+            return duration, "forever"
         else:
-            word = MODIFIER_NAMES[modifier] + 's' if value > 1 else MODIFIER_NAMES[modifier]
-            return duration, f'for {value} {word}'
+            word = MODIFIER_NAMES[modifier] + "s" if value > 1 else MODIFIER_NAMES[modifier]
+            return duration, f"for {value} {word}"
     except OverflowError:
-        return datetime.timedelta(seconds=1), 'forever'
+        return datetime.timedelta(seconds=1), "forever"

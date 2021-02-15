@@ -18,7 +18,7 @@ async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, cl
     :param clear_after: Time in seconds to wait before deleting
     :return:
     """
-    if clear_after > 0 and json_settings.data.get('clean_up') is True:
+    if clear_after > 0 and json_settings.data.get("clean_up") is True:
         await asyncio.sleep(clear_after)
         try:
             await client.delete_messages(chat_id, message_id)
@@ -35,12 +35,12 @@ def extract_entity_text(text: str, offset: int, length: int) -> str:
     :param length: Entity length
     :return: Returns required part of the text
     """
-    if sys.maxunicode == 0xffff:
-        return text[offset:offset + length]
+    if sys.maxunicode == 0xFFFF:
+        return text[offset : offset + length]
 
-    entity_text = text.encode('utf-16-le')
-    entity_text = entity_text[offset * 2:(offset + length) * 2]
-    return entity_text.decode('utf-16-le')
+    entity_text = text.encode("utf-16-le")
+    entity_text = entity_text[offset * 2 : (offset + length) * 2]
+    return entity_text.decode("utf-16-le")
 
 
 def get_args(text: str, maximum: int = 2) -> Union[List[str], str]:
