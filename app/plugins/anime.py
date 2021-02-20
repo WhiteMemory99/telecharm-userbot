@@ -86,7 +86,7 @@ def get_anime_info(response: dict) -> str:
     :return:
     """
     japanese_title = html.escape(response["title_romaji"], False)
-    english_title = html.escape(response["title_english"], False)
+    english_title = html.escape(response["title_english"], False) if response["title_english"] else japanese_title
     episode = response["episode"]
     is_nsfw = "Yes" if response["is_adult"] else "No"
 
