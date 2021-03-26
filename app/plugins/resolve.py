@@ -1,4 +1,3 @@
-import html
 from typing import Union
 
 from loguru import logger
@@ -13,7 +12,7 @@ from pyrogram.errors import (
 )
 from pyrogram.types import Chat, ChatPreview, Message, User
 
-from app.utils import clean_up, get_args
+from app.utils import clean_up, get_args, quote_html
 
 STATUS = {
     True: "Yes",
@@ -100,14 +99,14 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
         )
     else:  # It's a Chat object
         dc_name = f"{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}" if entity.dc_id else "Unavailable"
-        description = f"{html.escape(entity.description, False)}\n\n" if entity.description else ""
+        description = f"{quote_html(entity.description)}\n\n" if entity.description else ""
         linked_chat = f"<code>{entity.linked_chat.id}</code>" if entity.linked_chat else "<b>None</b>"
         is_private = True if not entity.username else False
 
         if entity.username:
             title = f'<a href="https://t.me/{entity.username}">{entity.title}</a>'
         else:
-            title = html.escape(entity.title, False)
+            title = quote_html(entity.title)
 
         full_text = (
             f"<b>{title}</b>\n\n{description}<b>ID</b>: <code>{entity.id}</code>\nType: <b>{entity.type}</b>\n"

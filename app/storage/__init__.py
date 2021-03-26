@@ -1,3 +1,3 @@
-from app.storage.json_storage import json_settings  # noqa
+from app.storage.json_storage import json_settings
 
-__all__ = "json_settings"
+__all__ = ("json_settings",)

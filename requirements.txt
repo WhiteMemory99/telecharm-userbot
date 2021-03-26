@@ -28,9 +28,9 @@ loguru==0.5.3; python_version >= "3.5" \
     --hash=sha256:b28e72ac7a98be3d28ad28570299a393dfcd32e5e3f6a353dec94675767b6319
 pyaes==1.6.1; python_version >= "3.6" and python_version < "4.0" \
     --hash=sha256:02c1b1405c38d3c370b085fb952dd8bea3fadcee6411ad99f312cc129c536d8f
-pyrogram==1.1.13; python_version >= "3.6" and python_version < "4.0" \
-    --hash=sha256:7ef6cf917f9c0311c26c817717fa3a95929d6b688d936a6191be1b5f81982add \
-    --hash=sha256:50898f1f77bf0333adbade06d04c0ce35b7be5be2391582a817e9a4bbcc3bc33
+pyrogram==1.2.5; python_version >= "3.6" and python_version < "4.0" \
+    --hash=sha256:ee4ca40d9b7d78da8335eb04462340ecbcf75a5c94d5b2c3fa6a454ac79e30df \
+    --hash=sha256:01ddf5a5beeba8180dde9f3a3394f57d9e0e2d631c3c34c2a16fa3ed1f20975a
 pysocks==1.7.1; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "4.0" or python_version >= "3.6" and python_version < "4.0" and python_full_version >= "3.4.0" \
     --hash=sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299 \
     --hash=sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5 \
@@ -78,9 +78,9 @@ tgcrypto==1.2.2; python_version >= "3.6" and python_version < "4.0" \
     --hash=sha256:e2c95040772d7db6c4ae55868de38c218c806edbef969f6de17983a2663b9699 \
     --hash=sha256:476a413105d96b6f87a5f58b13e2de3b5328cdc98c426758727dd1f8049bca65 \
     --hash=sha256:df1d7bc592309eab34ea132f41acc2d7d6e0756ec5fbc0263922cb0e0326c6ef
-urllib3==1.26.3; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version < "4" \
-    --hash=sha256:1b465e494e3e0d8939b50680403e3aedaa2bc434b7d5af64dfd3c958d7f5ae80 \
-    --hash=sha256:de3eedaad74a2683334e282005cd8d7f22f4d55fa690a2a1020a416cb0a47e73
+urllib3==1.26.4; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version < "4" \
+    --hash=sha256:2f4da4594db7e1e110a944bb1b551fdf4e6c136ad42e4234131391e21eb5b0df \
+    --hash=sha256:e7b021f7241115872f92f43c6508082facffbd1c048e3c6e2bb9c2a157e28937
 win32-setctime==1.0.3; sys_platform == "win32" and python_version >= "3.5" \
     --hash=sha256:dc925662de0a6eb987f0b01f599c01a8236cb8c62831c22d9cada09ad958243e \
     --hash=sha256:4e88556c32fdf47f64165a2180ba4552f8bb32c1103a2fafd05723a0bd42bd4b

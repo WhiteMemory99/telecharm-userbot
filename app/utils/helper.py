@@ -1,4 +1,5 @@
 import asyncio
+import html
 import sys
 from typing import List, Union
 
@@ -8,7 +9,19 @@ from pyrogram.errors import RPCError
 from app.storage import json_settings
 
 
-async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, clear_after: int = 3.5) -> None:
+def quote_html(text: str) -> str:
+    """
+    Escape unexpected HTML characters.
+
+    :param text: Original text
+    :return:
+    """
+    return html.escape(text, quote=False)
+
+
+async def clean_up(
+    client: Client, chat_id: Union[int, str], message_id: int, clear_after: Union[int, float] = 3.5
+) -> None:
     """
     Delete a message shortly after editing if cleaning up is enabled.
 
@@ -18,7 +31,7 @@ async def clean_up(client: Client, chat_id: Union[int, str], message_id: int, cl
     :param clear_after: Time in seconds to wait before deleting
     :return:
     """
-    if clear_after > 0 and json_settings.data.get("clean_up") is True:
+    if clear_after > 0 and json_settings.data.get("clean_up"):
         await asyncio.sleep(clear_after)
         try:
             await client.delete_messages(chat_id, message_id)

@@ -1,10 +1,8 @@
-import html
-
 from pyrogram import Client, filters
 from pyrogram.errors import FirstnameInvalid, FloodWait, UsernameInvalid, UsernameNotModified, UsernameOccupied
 from pyrogram.types import Message
 
-from app.utils import clean_up, get_args
+from app.utils import clean_up, get_args, quote_html
 
 
 @Client.on_message(filters.me & filters.command("stats", prefixes="."))
@@ -16,7 +14,7 @@ async def stats(client: Client, message: Message):
     user_list = []
     peak_unread_chat = None
     total_chats = channels = privates = groups = pinned = unread = peak_unread_count = bots = 0
-    async for dialog in client.iter_dialogs():  # noqa
+    async for dialog in client.iter_dialogs():
         total_chats += 1
         if dialog.is_pinned:
             pinned += 1
@@ -28,7 +26,7 @@ async def stats(client: Client, message: Message):
 
         if dialog.chat.type == "channel":
             channels += 1
-        elif dialog.chat.type in ["group", "supergroup"]:
+        elif dialog.chat.type in ("group", "supergroup"):
             groups += 1
         else:
             privates += 1
@@ -41,7 +39,7 @@ async def stats(client: Client, message: Message):
 
     contacts = await client.get_contacts_count()
     if peak_unread_chat:
-        unread_data = f"<b>{peak_unread_count}</b> in <code>{html.escape(peak_unread_chat, False)}</code>"
+        unread_data = f"<b>{peak_unread_count}</b> in <code>{quote_html(peak_unread_chat)}</code>"
     else:
         unread_data = f"<b>{peak_unread_count}</b>"
 
@@ -76,7 +74,7 @@ async def name(client: Client, message: Message):
         try:
             await client.update_profile(first_name=first_name, last_name=last_name)
             result = f"{first_name} {last_name}" if last_name else first_name
-            await message.edit_text(f"Your name's been changed to:\n<code>{html.escape(result, False)}</code>")
+            await message.edit_text(f"Your name's been changed to:\n<code>{quote_html(result)}</code>")
         except FirstnameInvalid:
             await message.edit_text("Your new first name is invalid.")
         except FloodWait as ex:
@@ -98,7 +96,7 @@ async def username(client: Client, message: Message):
             new_username = None
             text = "Your username's been deleted."
         else:
-            text = f"Your username's been changed to:\n<code>@{html.escape(new_username, False)}</code>"
+            text = f"Your username's been changed to:\n<code>@{quote_html(new_username)}</code>"
 
         try:
             await client.update_username(new_username)
@@ -131,7 +129,7 @@ async def bio(client: Client, message: Message):
             args = ""
             text = "Your bio's been deleted."
         else:
-            text = f"Your bio's been updated to:\n<code>{html.escape(args[:70], False)}</code>"
+            text = f"Your bio's been updated to:\n<code>{quote_html(args[:70])}</code>"
 
         try:
             await client.update_profile(bio=args[:70])  # Max bio length is 70 chars

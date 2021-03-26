@@ -1,4 +1,3 @@
-import html
 import sys
 import traceback
 from io import StringIO
@@ -6,7 +5,7 @@ from io import StringIO
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from app.utils import clean_up, get_args
+from app.utils import clean_up, get_args, quote_html
 
 
 @Client.on_message(filters.me & filters.command("py", prefixes="."))
@@ -18,7 +17,7 @@ async def execute_python(client: Client, message: Message):
     """
     args = get_args(message.text or message.caption, maximum=1)
     if args:
-        clear_timeout = 10
+        clear_timeout = 15
         result_type = "Output"
         old_stdout = sys.stdout
         old_stderr = sys.stderr
@@ -39,13 +38,13 @@ async def execute_python(client: Client, message: Message):
                 output = "The script was successful..."
 
             text = "<b>Input:</b>\n<pre>{}</pre>\n\n<b>{}:</b>\n<pre>{}</pre>".format(
-                html.escape(args, False), result_type, html.escape(output, False)
+                quote_html(args), result_type, quote_html(output)
             )
         except Exception:
             etype, evalue, _ = sys.exc_info()
             text = "<b>Input:</b>\n<pre>{}</pre>\n\n<b>Error log:</b>\n<pre>{}</pre>".format(
-                html.escape(args, False),
-                html.escape("".join(traceback.format_exception_only(etype, evalue)).strip(), False),  # A short message
+                quote_html(args),
+                quote_html("".join(traceback.format_exception_only(etype, evalue)).strip()),  # A short message
             )
         finally:  # Always return to original stdout and stderr
             sys.stdout = old_stdout

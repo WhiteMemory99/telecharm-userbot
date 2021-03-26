@@ -1,4 +1,3 @@
-import html
 import os
 import tempfile
 from decimal import Decimal
@@ -7,13 +6,12 @@ import httpx
 from pyrogram import Client, filters
 from pyrogram.types import Animation, Document, Message, Video
 
-from app.utils import clean_up
+from app.utils import clean_up, quote_html
 
 try:
     import cv2
 except ImportError:
     cv2 = None
-
 
 API_URL = "https://trace.moe/api/search"
 MAL_URL = "https://myanimelist.net/anime/{anime_id}"
@@ -55,7 +53,7 @@ async def find_anime(client: Client, message: Message):
         if isinstance(answer, str):  # Error
             await message.edit_text(answer)
         else:
-            text = get_anime_info(answer["docs"][0])  # noqa
+            text = get_anime_info(answer["docs"][0])
             await message.edit_text(text, disable_web_page_preview=True)
             return await clean_up(client, message.chat.id, message.message_id, clear_after=15)
 
@@ -85,8 +83,8 @@ def get_anime_info(response: dict) -> str:
     :param response: JSON response
     :return:
     """
-    japanese_title = html.escape(response["title_romaji"], False)
-    english_title = html.escape(response["title_english"], False) if response["title_english"] else japanese_title
+    japanese_title = quote_html(response["title_romaji"])
+    english_title = quote_html(response["title_english"]) if response["title_english"] else japanese_title
     episode = response["episode"]
     is_nsfw = "Yes" if response["is_adult"] else "No"
 

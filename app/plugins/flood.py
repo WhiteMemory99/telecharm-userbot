@@ -1,12 +1,11 @@
 import asyncio
-import html
 
 from loguru import logger
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import Message
 
-from app.utils import clean_up, get_args
+from app.utils import clean_up, get_args, quote_html
 
 
 @Client.on_message(filters.me & filters.command("flood", prefixes="."))
@@ -21,7 +20,7 @@ async def flood_command(client: Client, message: Message):
         )
         await clean_up(client, message.chat.id, message.message_id)
     else:
-        text_to_flood = html.escape(args[1], False)
+        text_to_flood = quote_html(args[1])
         await message.edit_text(text_to_flood)  # Edit the message with .flood command.
         for _ in range(int(args[0]) - 1):
             try:
