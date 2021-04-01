@@ -21,8 +21,8 @@ async def flood_command(client: Client, message: Message):
         await clean_up(client, message.chat.id, message.message_id)
     else:
         text_to_flood = quote_html(args[1])
-        await message.edit_text(text_to_flood)  # Edit the message with .flood command.
-        for _ in range(int(args[0]) - 1):
+        await message.delete()
+        for _ in range(int(args[0])):
             try:
                 await message.reply_text(text_to_flood, quote=False, disable_web_page_preview=True)
             except FloodWait as ex:
