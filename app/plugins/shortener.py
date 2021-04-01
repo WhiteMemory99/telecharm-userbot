@@ -15,9 +15,9 @@ async def shorten_url(client: Client, message: Message):
     """
     urls = []
     entities = message.entities or message.caption_entities
-    if entities:
+    if entities:  # There are outgoing entities
         urls += get_text_urls(message.text or message.caption, entities)
-    if message.reply_to_message:  # Outgoing entities are empty, but there is a reply
+    if message.reply_to_message:
         entities = message.reply_to_message.entities or message.reply_to_message.caption_entities
         if entities:
             urls += get_text_urls(message.reply_to_message.text or message.reply_to_message.caption, entities)
