@@ -24,24 +24,28 @@ async def change_keyboard_layout(text: str, from_layout: str, to_layout: str) ->
 
 
 @Client.on_message(filters.me & filters.command("layout", prefixes="."))
-async def layout_command(client: Client, msg: Message):
-    if not msg.reply_to_message:
-        await msg.edit_text("You must reply to a message")
-        return await clean_up(client, msg.chat.id, msg.message_id)
+async def layout_command(client: Client, message: Message):
+    if not message.reply_to_message:
+        await message.edit_text("You must reply to a message")
+        return await clean_up(client, message.chat.id, message.message_id)
 
-    text = msg.reply_to_message.text
+    text = message.reply_to_message.text
     current_layout = LAYOUTS[await get_current_layout(text)]
-    if get_args(msg.text, 1):
-        to_layout = LAYOUTS.get(get_args(msg.text, 1), None)
+    if get_args(message.text, 1):
+        to_layout = LAYOUTS.get(get_args(message.text, 1), None)
     else:
         to_layout = [layout for layout in LAYOUTS.values() if layout != current_layout][0]
 
     changed_text = await change_keyboard_layout(text, current_layout, to_layout)
-    if msg.reply_to_message.from_user == msg.from_user:
+    if message.reply_to_message.from_user == message.from_user:
         await asyncio.gather(
-            client.edit_message_text(msg.reply_to_message.chat.id, msg.reply_to_message.message_id, changed_text),
-            msg.delete()
+            client.edit_message_text(
+                message.reply_to_message.chat.id,
+                message.reply_to_message.message_id,
+                changed_text
+            ),
+            message.delete(),
         )
     else:
-        await msg.edit_text(changed_text)
-        await clean_up(client, msg.chat.id, msg.message_id)
+        await message.edit_text(changed_text)
+        await clean_up(client, message.chat.id, message.message_id)
