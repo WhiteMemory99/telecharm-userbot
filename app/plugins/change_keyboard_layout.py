@@ -44,3 +44,4 @@ async def layout_command(client: Client, msg: Message):
         )
     else:
         await msg.edit_text(changed_text)
+        await clean_up(client, msg.chat.id, msg.message_id)
