@@ -25,11 +25,17 @@ async def change_keyboard_layout(text: str, from_layout: str, to_layout: str) ->
 
 @Client.on_message(filters.me & filters.command("layout", prefixes="."))
 async def layout_command(client: Client, message: Message):
+    """
+    Change keyboard layout of message
+    Example:
+        from: руддщ!
+        to: hello!
+
+    """
     if not message.reply_to_message:
         await message.edit_text("You must reply to a message")
         return await clean_up(client, message.chat.id, message.message_id)
-
-    text = message.reply_to_message.text
+    text = message.reply_to_message.text or message.reply_to_message.caption
     current_layout = LAYOUTS[await get_current_layout(text)]
     if get_args(message.text, 1):
         to_layout = LAYOUTS.get(get_args(message.text, 1), None)
@@ -42,10 +48,11 @@ async def layout_command(client: Client, message: Message):
             client.edit_message_text(
                 message.reply_to_message.chat.id,
                 message.reply_to_message.message_id,
-                changed_text
+                changed_text,
+                entities=message.reply_to_message.entities,
             ),
             message.delete(),
         )
     else:
-        await message.edit_text(changed_text)
-        await clean_up(client, message.chat.id, message.message_id)
+        await message.edit_text(changed_text, entities=message.reply_to_message.entities)
+        await clean_up(client, message.chat.id, message.message_id, 30)
