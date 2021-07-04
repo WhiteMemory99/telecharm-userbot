@@ -37,8 +37,9 @@ async def layout_command(client: Client, message: Message):
         return await clean_up(client, message.chat.id, message.message_id)
     text = message.reply_to_message.text or message.reply_to_message.caption
     current_layout = LAYOUTS[await get_current_layout(text)]
-    if get_args(message.text, 1):
-        to_layout = LAYOUTS.get(get_args(message.text, 1), None)
+    args = get_args(message.text, 1)
+    if args:
+        to_layout = LAYOUTS.get(args, None)
     else:
         to_layout = [layout for layout in LAYOUTS.values() if layout != current_layout][0]
 
