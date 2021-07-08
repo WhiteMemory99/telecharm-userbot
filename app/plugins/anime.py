@@ -122,10 +122,10 @@ def get_anime_info(response: dict) -> str:
     if anilist_data:
         myanimelist = MAL_URL.format(anime_id=anilist_data["idMal"])
         link_block = (
-            f'<b><a href="{myanimelist}">Watch on MyAnimeList</a>\n<a href="{anilist_id}">Watch on Anilist</a></b>'
+            f'<b><a href="{myanimelist}">Track on MyAnimeList</a>\n<a href="{anilist_id}">Track on Anilist</a></b>'
         )
     else:
-        link_block = f'<b><a href="{anilist_id}">Watch on Anilist</a></b>'
+        link_block = f'<b><a href="{anilist_id}">Track on Anilist</a></b>'
 
     accuracy = (Decimal(response["similarity"]) * 100).quantize(Decimal(".01"))
     warn = ", <i>probably wrong</i>" if accuracy < 87 else ""
