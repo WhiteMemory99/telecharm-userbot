@@ -1,8 +1,7 @@
 # **Telecharm userbot**
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/47528bf391c9433ba5a0333c55f9f12a)](https://app.codacy.com/gh/WhiteMemory99/telecharm-userbot?utm_source=github.com&utm_medium=referral&utm_content=WhiteMemory99/telecharm-userbot&utm_campaign=Badge_Grade_Settings)
 [![Python 3.8](https://img.shields.io/badge/Python-3.8%20or%20newer-blue.svg)](https://www.python.org/downloads/release/python-380/)
-![Code Quality](https://www.code-inspector.com/project/24413/score/svg)  
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/47528bf391c9433ba5a0333c55f9f12a)](https://app.codacy.com/gh/WhiteMemory99/telecharm-userbot?utm_source=github.com&utm_medium=referral&utm_content=WhiteMemory99/telecharm-userbot&utm_campaign=Badge_Grade_Settings)  
 A powerful, fast and simple Telegram userbot written in Python 3 and based on Pyrogram 1.X. Currently in active WIP
 state, so feel free to contribute.
 
