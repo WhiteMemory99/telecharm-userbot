@@ -113,7 +113,7 @@ def get_anime_info(response: dict) -> str:
         to_minutes, to_seconds = divmod(int(response["to"]), 60)
         episode = (
             f"\nEpisode <b>{episode}</b>, between <b>{from_minutes:02d}:{from_seconds:02d}</b> "
-            f"and <b>{to_minutes:02d}:{to_seconds:02d}</b>."
+            f"and <b>{to_minutes:02d}:{to_seconds:02d}</b>"
         )
     else:
         episode = ""
