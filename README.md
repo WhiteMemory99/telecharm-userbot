@@ -7,7 +7,7 @@ state, so feel free to contribute.
 
 ## Starting up
 
-**_Ensure you have installed the Python 3.7 or above before proceeding._**
+**_Ensure you have installed the Python 3.8 or above before proceeding._**
 
 ### Preparations
 
