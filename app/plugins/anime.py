@@ -98,7 +98,7 @@ def get_anime_info(response: dict) -> str:
     english_title = quote_html(anilist_data["title"]["english"]) if anilist_data["title"]["english"] else japanese_title
     episode = response["episode"]
     is_nsfw = "Yes" if anilist_data["isAdult"] else "No"
-    synonyms = "\n" + ", ".join(anilist_data["synonyms"]) if anilist_data["synonyms"] else ""
+    synonyms = "\n<b>Synonyms:</b> " + ", ".join(anilist_data["synonyms"]) if anilist_data["synonyms"] else ""
 
     if japanese_title == english_title:
         title_block = f"<b>Title:</b> <code>{japanese_title}</code>{synonyms}"
