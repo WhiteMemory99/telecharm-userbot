@@ -1,3 +1,4 @@
+import asyncio
 import os
 import tempfile
 from decimal import Decimal
@@ -32,7 +33,7 @@ async def find_anime(client: Client, message: Message):  # TODO: Refactor
         with tempfile.TemporaryDirectory() as tempdir:
             await message.edit_text("<i>Processing...</i>")
             file_path = await client.download_media(target_msg, file_name=os.path.join(tempdir, media.file_id))
-            if isinstance(media, Animation) or isinstance(media, Video):
+            if isinstance(media, (Animation, Video)):
                 if cv2 is not None:
                     file_path = get_video_frame(file_path)
                 else:
@@ -43,7 +44,7 @@ async def find_anime(client: Client, message: Message):  # TODO: Refactor
                 try:
                     response = await http_client.post(API_URL, files={"image": open(file_path, "rb")})
                     response.raise_for_status()
-                    answer = response.json()
+                    answer = response.json()["result"][0]
                 except httpx.ReadTimeout:
                     answer = "Failed to get info about this anime:\n<code>Read Timeout</code>"
                 except httpx.HTTPStatusError as ex:
@@ -53,9 +54,17 @@ async def find_anime(client: Client, message: Message):  # TODO: Refactor
         if isinstance(answer, str):  # Error
             await message.edit_text(answer)
         else:
-            text = get_anime_info(answer["result"][0])
-            await message.edit_text(text, disable_web_page_preview=True)
-            return await clean_up(client, message.chat.id, message.message_id, clear_after=15)
+            text = get_anime_info(answer)
+            outgoing_message = await client.send_video(
+                message.chat.id,
+                answer["video"] + "&size=l",
+                caption=text,
+                reply_to_message_id=message.reply_to_message.message_id if message.reply_to_message else None,
+
+            )
+            await message.delete()
+
+            return await clean_up(client, message.chat.id, outgoing_message.message_id, clear_after=25)
 
     await clean_up(client, message.chat.id, message.message_id)
 
@@ -89,12 +98,14 @@ def get_anime_info(response: dict) -> str:
     english_title = quote_html(anilist_data["title"]["english"]) if anilist_data["title"]["english"] else japanese_title
     episode = response["episode"]
     is_nsfw = "Yes" if anilist_data["isAdult"] else "No"
+    synonyms = "\n" + ", ".join(anilist_data["synonyms"]) if anilist_data["synonyms"] else ""
 
     if japanese_title == english_title:
-        title_block = f"<b>Title:</b> <code>{japanese_title}</code>"
+        title_block = f"<b>Title:</b> <code>{japanese_title}</code>{synonyms}"
     else:
         title_block = (
-            f"<b>English title:</b> <code>{english_title}</code>\n<b>Japanese title:</b> <code>{japanese_title}</code>"
+            f"<b>English title:</b> <code>{english_title}</code>\n"
+            f"<b>Japanese title:</b> <code>{japanese_title}</code>{synonyms}"
         )
 
     if episode:

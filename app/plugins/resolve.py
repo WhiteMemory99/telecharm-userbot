@@ -101,7 +101,7 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
         dc_name = f"{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}" if entity.dc_id else "Unavailable"
         description = f"{quote_html(entity.description)}\n\n" if entity.description else ""
         linked_chat = f"<code>{entity.linked_chat.id}</code>" if entity.linked_chat else "<b>None</b>"
-        is_private = True if not entity.username else False
+        is_private = not bool(entity.username)
 
         if entity.username:
             title = f'<a href="https://t.me/{entity.username}">{entity.title}</a>'

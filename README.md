@@ -1,6 +1,7 @@
 # **Telecharm userbot**
 
-[![Python 3.7](https://img.shields.io/badge/Python-3.7%20or%20newer-blue.svg)](https://www.python.org/downloads/release/python-370/)  
+[![Python 3.8](https://img.shields.io/badge/Python-3.8%20or%20newer-blue.svg)](https://www.python.org/downloads/release/python-380/)
+![Code Quality](https://www.code-inspector.com/project/24413/score/svg)  
 A powerful, fast and simple Telegram userbot written in Python 3 and based on Pyrogram 1.X. Currently in active WIP
 state, so feel free to contribute.
 

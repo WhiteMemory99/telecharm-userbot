@@ -14,7 +14,7 @@ async def purge_command(client: Client, message: Message):
     Purge messages in any chat, supports 2 working modes: my messages and all messages.
     """
     args = get_args(message.text or message.caption)
-    me_mode = True if "me" in args else False
+    me_mode = "me" in args
 
     if message.chat.type in ("group", "supergroup") and not me_mode:  # Check admin rights if we delete all messages
         member = await message.chat.get_member(message.from_user.id)
@@ -27,13 +27,13 @@ async def purge_command(client: Client, message: Message):
             message.chat.id, offset_id=message.reply_to_message.message_id, reverse=True
         ):
             if me_mode and msg.from_user.id != message.from_user.id:
-                continue  # Skip messages sent by other users if the me_mode is True
+                continue  # Skip messages sent by others if me_mode is True
+
+            if len(message_list) < 100:
+                message_list.append(msg.message_id)
             else:
-                if len(message_list) < 100:
-                    message_list.append(msg.message_id)
-                else:
-                    await client.delete_messages(message.chat.id, message_ids=message_list)
-                    message_list = []
+                await client.delete_messages(message.chat.id, message_ids=message_list)
+                message_list = []
 
         if message_list:
             await client.delete_messages(message.chat.id, message_ids=message_list)
