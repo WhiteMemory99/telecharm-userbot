@@ -13,13 +13,13 @@ try:
 except ImportError:
     cv2 = None
 
-API_URL = "https://trace.moe/api/search"
+API_URL = "https://api.trace.moe/search?cutBorders&anilistInfo"
 MAL_URL = "https://myanimelist.net/anime/{anime_id}"
 ANILIST_URL = "https://anilist.co/anime/{anime_id}"
 
 
 @Client.on_message(filters.me & filters.command(["anime", "whatanime"], prefixes="."))
-async def find_anime(client: Client, message: Message):
+async def find_anime(client: Client, message: Message):  # TODO: Refactor
     """
     Get info about an anime based on a photo/video/GIF/document.
     """
@@ -53,7 +53,7 @@ async def find_anime(client: Client, message: Message):
         if isinstance(answer, str):  # Error
             await message.edit_text(answer)
         else:
-            text = get_anime_info(answer["docs"][0])
+            text = get_anime_info(answer["result"][0])
             await message.edit_text(text, disable_web_page_preview=True)
             return await clean_up(client, message.chat.id, message.message_id, clear_after=15)
 
@@ -83,10 +83,12 @@ def get_anime_info(response: dict) -> str:
     :param response: JSON response
     :return:
     """
-    japanese_title = quote_html(response["title_romaji"])
-    english_title = quote_html(response["title_english"]) if response["title_english"] else japanese_title
+    anilist_data = response["anilist"]
+
+    japanese_title = quote_html(anilist_data["title"]["romaji"])
+    english_title = quote_html(anilist_data["title"]["english"]) if anilist_data["title"]["english"] else japanese_title
     episode = response["episode"]
-    is_nsfw = "Yes" if response["is_adult"] else "No"
+    is_nsfw = "Yes" if anilist_data["isAdult"] else "No"
 
     if japanese_title == english_title:
         title_block = f"<b>Title:</b> <code>{japanese_title}</code>"
@@ -96,19 +98,23 @@ def get_anime_info(response: dict) -> str:
         )
 
     if episode:
-        minutes, seconds = divmod(int(response["at"]), 60)
-        episode = f"\nEpisode <b>{episode}</b>, at <b>~{minutes:02d}:{seconds:02d}</b>"
+        from_minutes, from_seconds = divmod(int(response["from"]), 60)
+        to_minutes, to_seconds = divmod(int(response["to"]), 60)
+        episode = (
+            f"\nEpisode <b>{episode}</b>, between <b>{from_minutes:02d}:{from_seconds:02d}</b> "
+            f"and <b>{to_minutes:02d}:{to_seconds:02d}</b>."
+        )
     else:
         episode = ""
 
-    anilist = ANILIST_URL.format(anime_id=response["anilist_id"])
-    if response["mal_id"]:
-        myanimelist = MAL_URL.format(anime_id=response["mal_id"])
+    anilist_id = ANILIST_URL.format(anime_id=anilist_data["id"])
+    if anilist_data:
+        myanimelist = MAL_URL.format(anime_id=anilist_data["idMal"])
         link_block = (
-            f'<b><a href="{myanimelist}">Watch on MyAnimeList</a>\n<a href="{anilist}">Watch on Anilist</a></b>'
+            f'<b><a href="{myanimelist}">Watch on MyAnimeList</a>\n<a href="{anilist_id}">Watch on Anilist</a></b>'
         )
     else:
-        link_block = f'<b><a href="{anilist}">Watch on Anilist</a></b>'
+        link_block = f'<b><a href="{anilist_id}">Watch on Anilist</a></b>'
 
     accuracy = (Decimal(response["similarity"]) * 100).quantize(Decimal(".01"))
     warn = ", <i>probably wrong</i>" if accuracy < 87 else ""

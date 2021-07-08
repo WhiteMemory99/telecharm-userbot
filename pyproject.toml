@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "telecharm"
-version = "0.9.0"
+version = "0.9.1"
 description = "Telegram userbot"
 authors = ["Daniil Kovalenko <lisen1510@gmail.com>"]
 license = "MIT"
@@ -19,8 +19,6 @@ ujson = { version = "^4.0.1", optional = true }
 requests = "^2.25.1"
 
 [tool.poetry.dev-dependencies]
-flake8 = "^3.8.4"
-black = {version = "^20.8b1", allow-prereleases = true}
 
 [tool.poetry.extras]
 opencv = ["opencv-python"]

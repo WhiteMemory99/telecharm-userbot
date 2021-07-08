@@ -4,6 +4,9 @@ import pyrogram
 
 
 class SysInfo:
+    def __init__(self):
+        pass
+
     @property
     def os(self):
         return platform.platform()
@@ -61,4 +64,4 @@ class SysInfo:
         return "\n".join(self.collect())
 
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"

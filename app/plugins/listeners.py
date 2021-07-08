@@ -13,7 +13,7 @@ async def dot_auto_forwarding(_, message: Message):
     the replied message to the current chat instead of your dot reply.
     """
     if json_settings.data.get("dot_auto_forward"):
-        asyncio.gather(
+        await asyncio.gather(
             message.reply_to_message.forward(message.chat.id, disable_notification=True),
             message.delete(),
         )

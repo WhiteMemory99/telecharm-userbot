@@ -26,17 +26,20 @@ async def change_keyboard_layout(text: str, from_layout: str, to_layout: str) ->
 @Client.on_message(filters.me & filters.command("layout", prefixes="."))
 async def layout_command(client: Client, message: Message):
     """
-    Change keyboard layout of message
+    Change the keyboard layout of a message.
+
     Example:
         from: руддщ!
         to: hello!
-
     """
     if not message.reply_to_message:
-        await message.edit_text("You must reply to a message")
+        await message.edit_text("You must reply to a message.")
         return await clean_up(client, message.chat.id, message.message_id)
+
     text = message.reply_to_message.text or message.reply_to_message.caption
+    entities = message.reply_to_message.entities or message.reply_to_message.caption_entities
     current_layout = LAYOUTS[await get_current_layout(text)]
+
     args = get_args(message.text, 1)
     if args:
         to_layout = LAYOUTS.get(args, None)
@@ -44,16 +47,16 @@ async def layout_command(client: Client, message: Message):
         to_layout = [layout for layout in LAYOUTS.values() if layout != current_layout][0]
 
     changed_text = await change_keyboard_layout(text, current_layout, to_layout)
-    if message.reply_to_message.from_user == message.from_user:
+    if message.reply_to_message.from_user.id == message.from_user.id:
         await asyncio.gather(
             client.edit_message_text(
                 message.reply_to_message.chat.id,
                 message.reply_to_message.message_id,
                 changed_text,
-                entities=message.reply_to_message.entities,
+                entities=entities,
             ),
             message.delete(),
         )
     else:
-        await message.edit_text(changed_text, entities=message.reply_to_message.entities)
-        await clean_up(client, message.chat.id, message.message_id, 30)
+        await message.edit_text(changed_text, entities=entities)
+        await clean_up(client, message.chat.id, message.message_id, 60)
