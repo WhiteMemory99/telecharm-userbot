@@ -1,5 +1,5 @@
 import pathlib
-from typing import Union
+from typing import Any, Union
 
 try:
     import ujson as json
@@ -34,5 +34,5 @@ class JSONStorage:
         with self.path.open("w") as file:
             return json.dump(self.data, file, indent=4)
 
-
-json_settings = JSONStorage("app/storage/storage.json")  # Insert the path to our JSON storage, created automatically
+    def get(self, key: str, default: Any = None):
+        return self.data.get(key, default)

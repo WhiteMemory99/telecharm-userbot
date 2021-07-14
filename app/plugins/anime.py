@@ -1,34 +1,133 @@
-import asyncio
 import os
 import tempfile
 from decimal import Decimal
+from typing import List, Optional
 
 import httpx
-from pyrogram import Client, filters
-from pyrogram.types import Animation, Document, Message, Video
+from pydantic import BaseModel, Field, ValidationError, validator
 
-from app.utils import clean_up, quote_html
+from pyrogram import filters
+from pyrogram.types import Animation, Document, Video
+
+from app import config
+from app.utils import quote_html, Client, Message
 
 try:
     import cv2
 except ImportError:
     cv2 = None
 
-API_URL = "https://api.trace.moe/search?cutBorders&anilistInfo"
-MAL_URL = "https://myanimelist.net/anime/{anime_id}"
-ANILIST_URL = "https://anilist.co/anime/{anime_id}"
+
+class AnimeTitle(BaseModel):
+    native: str
+    romaji: str
+    english: Optional[str]
+
+    @validator("*")
+    def secure_text(cls, v):
+        return quote_html(v)
+
+
+class AnilistData(BaseModel):
+    id: int
+    mal_id: int = Field(alias="idMal")
+    title: AnimeTitle
+    synonyms: Optional[List[str]]
+    is_adult: bool = Field(alias="isAdult")
+
+    @validator("synonyms", each_item=True)
+    def secure_text(cls, v):
+        return f"<code>{quote_html(v)}</code>"
+
+
+class AnimeResult(BaseModel):
+    anilist: AnilistData
+    filename: Optional[str]
+    episode: Optional[int]
+    from_time: Optional[float] = Field(alias="from")
+    to_time: Optional[float] = Field(alias="to")
+    similarity: float
+    video: str
+    image: str
+
+    @validator("similarity")
+    def normalize_similarity(cls, v):
+        return (Decimal(v) * 100).quantize(Decimal(".01"))
+
+    @property
+    def big_video_link(self) -> str:
+        return self.video + "&size=l"
+
+    @property
+    def title_block(self) -> str:
+        romaji_text = f"<b>Japanese title:</b> <code>{self.anilist.title.romaji}</code>"
+        if self.anilist.title.english:
+            text = romaji_text + f"\n<b>English title:</b> <code>{self.anilist.title.english}</code>"
+        else:
+            text = romaji_text
+
+        if self.anilist.synonyms:
+            synonyms = ", ".join(self.anilist.synonyms)
+            text = text + f"\n\n<b>Synonyms:</b> {synonyms}"
+
+        return text
+
+    @property
+    def accuracy_status(self) -> str:
+        if self.similarity > 97:
+            return "fantastic"
+        elif self.similarity > 91:
+            return "great"
+        elif self.similarity > 86:
+            return "good"
+        elif self.similarity > 80:
+            return "bad"
+        else:
+            return "terrible"
+
+    @property
+    def tracking_links_block(self) -> str:
+        anilist_url = f"https://anilist.co/anime/{self.anilist.id}"
+        myanimelist_url = f"https://myanimelist.net/anime/{self.anilist.mal_id}"
+
+        return (
+            f'<b><a href="{myanimelist_url}">Track on MyAnimeList</a>\n<a href="{anilist_url}">Track on Anilist</a></b>'
+        )
+
+    def format_to_text(self) -> str:
+        """Format the API data into a human-readable state."""
+        if self.episode:
+            from_minutes, from_seconds = divmod(int(self.from_time), 60)
+            to_minutes, to_seconds = divmod(int(self.to_time), 60)
+            if from_minutes == to_minutes and from_seconds == to_seconds:
+                time_code = f"at <b>{to_minutes:02d}:{to_seconds:02d}</b>"
+            else:
+                time_code = (
+                    f"between <b>{from_minutes:02d}:{from_seconds:02d}</b> "
+                    f"and <b>{to_minutes:02d}:{to_seconds:02d}</b>"
+                )
+
+            episode_text = f"\nEpisode <b>{self.episode}</b>, {time_code}"
+        else:
+            episode_text = ""
+
+        is_nsfw = "Yes" if self.anilist.is_adult else "No"
+        return (
+            f"{self.title_block}\n\nNSFW: <b>{is_nsfw}</b>\nAccuracy is <b>{self.accuracy_status}</b> - "
+            f"{self.similarity}%{episode_text}\n\n{self.tracking_links_block}"
+        )
 
 
 @Client.on_message(filters.me & filters.command(["anime", "whatanime"], prefixes="."))
-async def find_anime(client: Client, message: Message):  # TODO: Refactor
-    """
-    Get info about an anime based on a photo/video/GIF/document.
-    """
+async def find_anime(client: Client, message: Message):
+    """Get info about an anime based on a photo/video/GIF/document."""
     target_msg = message.reply_to_message if message.reply_to_message else message
     media = target_msg.photo or target_msg.video or target_msg.animation or target_msg.document
 
     if media is None or (isinstance(media, Document) and "image" not in media.mime_type):
-        await message.edit_text("A photo, video, GIF or <b>image</b> document is required.")
+        await message.edit_text(
+            "A photo, video, GIF or <b>image</b> document is required.", message_ttl=config.DEFAULT_TTL
+        )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
             await message.edit_text("<i>Processing...</i>")
@@ -37,36 +136,37 @@ async def find_anime(client: Client, message: Message):  # TODO: Refactor
                 if cv2 is not None:
                     file_path = get_video_frame(file_path)
                 else:
-                    await message.edit_text("This media type requires <code>opencv-python</code>.")
-                    return await clean_up(client, message.chat.id, message.message_id)
+                    return await message.edit_text(
+                        "This media type requires <code>opencv-python</code>.", message_ttl=config.DEFAULT_TTL
+                    )
 
-            async with httpx.AsyncClient(timeout=10) as http_client:
-                try:
-                    response = await http_client.post(API_URL, files={"image": open(file_path, "rb")})
-                    response.raise_for_status()
-                    answer = response.json()["result"][0]
-                except httpx.ReadTimeout:
-                    answer = "Failed to get info about this anime:\n<code>Read Timeout</code>"
-                except httpx.HTTPStatusError as ex:
-                    description = httpx.codes.get_reason_phrase(ex.response.status_code)
-                    answer = f"Failed to get info about this anime:\n<code>{description}</code>"
-
-        if isinstance(answer, str):  # Error
-            await message.edit_text(answer)
-        else:
-            text = get_anime_info(answer)
-            outgoing_message = await client.send_video(
-                message.chat.id,
-                answer["video"] + "&size=l",
-                caption=text,
-                reply_to_message_id=message.reply_to_message.message_id if message.reply_to_message else None,
-
-            )
-            await message.delete()
-
-            return await clean_up(client, message.chat.id, outgoing_message.message_id, clear_after=25)
-
-    await clean_up(client, message.chat.id, message.message_id)
+            try:
+                response = await client.http_client.post(
+                    "https://api.trace.moe/search?cutBorders&anilistInfo", files={"image": open(file_path, "rb")}
+                )
+                response.raise_for_status()
+                parsed_result = AnimeResult.parse_obj(response.json()["result"][0])
+                await client.send_video(
+                    message.chat.id,
+                    parsed_result.big_video_link,
+                    caption=parsed_result.format_to_text(),
+                    reply_to_message_id=message.reply_to_message.message_id if message.reply_to_message else None,
+                    message_ttl=30
+                )
+                await message.delete()
+            except httpx.ReadTimeout:
+                await message.edit_text(
+                    "Failed to get info about this anime:\n<code>Read Timeout</code>", message_ttl=config.DEFAULT_TTL
+                )
+            except httpx.HTTPStatusError as ex:
+                description = httpx.codes.get_reason_phrase(ex.response.status_code)
+                await message.edit_text(
+                    f"Failed to get info about this anime:\n<code>{description}</code>", message_ttl=config.DEFAULT_TTL
+                )
+            except ValidationError:
+                await message.edit_text(
+                    "Seems that the API has changed.\nPlease, update Telecharm or wait for new versions.", message_ttl=5
+                )
 
 
 def get_video_frame(file_path: str) -> str:
@@ -83,52 +183,3 @@ def get_video_frame(file_path: str) -> str:
     cv2.imwrite(new_path, image)
 
     return new_path
-
-
-def get_anime_info(response: dict) -> str:
-    """
-    Get a ready-to-use info about an anime and return the whole text.
-
-    :param response: JSON response
-    :return:
-    """
-    anilist_data = response["anilist"]
-
-    japanese_title = quote_html(anilist_data["title"]["romaji"])
-    english_title = quote_html(anilist_data["title"]["english"]) if anilist_data["title"]["english"] else japanese_title
-    episode = response["episode"]
-    is_nsfw = "Yes" if anilist_data["isAdult"] else "No"
-    synonyms = "\n<b>Synonyms:</b> " + ", ".join(anilist_data["synonyms"]) if anilist_data["synonyms"] else ""
-
-    if japanese_title == english_title:
-        title_block = f"<b>Title:</b> <code>{japanese_title}</code>{synonyms}"
-    else:
-        title_block = (
-            f"<b>English title:</b> <code>{english_title}</code>\n"
-            f"<b>Japanese title:</b> <code>{japanese_title}</code>{synonyms}"
-        )
-
-    if episode:
-        from_minutes, from_seconds = divmod(int(response["from"]), 60)
-        to_minutes, to_seconds = divmod(int(response["to"]), 60)
-        episode = (
-            f"\nEpisode <b>{episode}</b>, between <b>{from_minutes:02d}:{from_seconds:02d}</b> "
-            f"and <b>{to_minutes:02d}:{to_seconds:02d}</b>"
-        )
-    else:
-        episode = ""
-
-    anilist_id = ANILIST_URL.format(anime_id=anilist_data["id"])
-    if anilist_data:
-        myanimelist = MAL_URL.format(anime_id=anilist_data["idMal"])
-        link_block = (
-            f'<b><a href="{myanimelist}">Track on MyAnimeList</a>\n<a href="{anilist_id}">Track on Anilist</a></b>'
-        )
-    else:
-        link_block = f'<b><a href="{anilist_id}">Track on Anilist</a></b>'
-
-    accuracy = (Decimal(response["similarity"]) * 100).quantize(Decimal(".01"))
-    warn = ", <i>probably wrong</i>" if accuracy < 87 else ""
-    full_text = f"{title_block}\n\nNSFW: <b>{is_nsfw}</b>\nAccuracy: <b>{accuracy}%</b>{warn}{episode}\n\n{link_block}"
-
-    return full_text

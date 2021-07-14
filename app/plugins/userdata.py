@@ -1,15 +1,13 @@
-from pyrogram import Client, filters
+from pyrogram import filters
 from pyrogram.errors import FirstnameInvalid, FloodWait, UsernameInvalid, UsernameNotModified, UsernameOccupied
-from pyrogram.types import Message
 
-from app.utils import clean_up, get_args, quote_html
+from app import config
+from app.utils import quote_html, Client, Message
 
 
 @Client.on_message(filters.me & filters.command("stats", prefixes="."))
-async def stats(client: Client, message: Message):
-    """
-    Gather profile stats containing chats info to share it to anyone.
-    """
+async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
+    """Gather profile stats containing chats info for you."""
     await message.edit_text("<i>Gathering info...</i>")
     user_list = []
     peak_unread_chat = None
@@ -46,19 +44,19 @@ async def stats(client: Client, message: Message):
     await message.edit_text(
         f"Total chats: <b>{total_chats}</b>\nPinned: <b>{pinned}</b>\nUnread: <b>{unread}</b>\n"
         f"Channels: <b>{channels}</b>\nPrivates: <b>{privates}</b>\nBots: <b>{bots}</b>\nGroups: <b>{groups}</b>"
-        f"\n\nTelegram contacts: <b>{contacts}</b>\nPeak value of unread per chat: {unread_data}"
+        f"\n\nTelegram contacts: <b>{contacts}</b>\nPeak value of unread per chat: {unread_data}",
+        message_ttl=25
     )
-    await clean_up(client, message.chat.id, message.message_id, clear_after=20)
 
 
 @Client.on_message(filters.me & filters.command("name", prefixes="."))
-async def name(client: Client, message: Message):
-    """
-    Change profile name, this command is flexible and has an auto-balancer for long names.
-    """
-    args = get_args(message.text or message.caption, maximum=0)
+async def change_name(client: Client, message: Message):
+    """Change profile name, this command is flexible and has auto-balancing for long names."""
+    args = message.get_args()
     if not args:
-        await message.edit_text("Pass your new name.\n<code>.name I'm a superman!</code>")
+        await message.edit_text(
+            "Pass your new name.\n<code>.name I'm a superman!</code>", message_ttl=config.DEFAULT_TTL
+        )
     else:
         if len(args) == 1:
             first_name = args[0][:64]
@@ -73,25 +71,26 @@ async def name(client: Client, message: Message):
 
         try:
             await client.update_profile(first_name=first_name, last_name=last_name)
-            result = f"{first_name} {last_name}" if last_name else first_name
-            await message.edit_text(f"Your name's been changed to:\n<code>{quote_html(result)}</code>")
+            full_name = f"{first_name} {last_name}" if last_name else first_name
+            await message.edit_text(
+                f"Your name's been changed to:\n<code>{quote_html(full_name)}</code>", message_ttl=5
+            )
         except FirstnameInvalid:
-            await message.edit_text("Your new first name is invalid.")
+            await message.edit_text("Your new first name is invalid.", message_ttl=config.DEFAULT_TTL)
         except FloodWait as ex:
-            await message.edit_text(f"<b>FloodWait</b>, retry in <code>{ex.x}</code> seconds.")
-
-    await clean_up(client, message.chat.id, message.message_id)
+            await message.edit_text(f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5)
 
 
 @Client.on_message(filters.me & filters.command("username", prefixes="."))
-async def username(client: Client, message: Message):
-    """
-    Change profile username. Supports "del" argument to delete the current username if there is one.
-    """
-    new_username = get_args(message.text or message.caption, maximum=1).lstrip("@")
-    if not new_username:
-        await message.edit_text("Pass your new username.\n<code>.username del</code> to delete it.")
+async def change_username(client: Client, message: Message):
+    """Change profile username. Supports `del` argument to delete the current username if there is one."""
+    args = message.get_args(maximum=1)
+    if not args:
+        await message.edit_text(
+            "Pass your new username.\n<code>.username del</code> to delete it.", message_ttl=config.DEFAULT_TTL
+        )
     else:
+        new_username = args[0].lstrip("@")
         if new_username == "del":
             new_username = None
             text = "Your username's been deleted."
@@ -100,41 +99,47 @@ async def username(client: Client, message: Message):
 
         try:
             await client.update_username(new_username)
-            await message.edit_text(text)
+            await message.edit_text(text, message_ttl=5)
         except UsernameNotModified:
-            await message.edit_text("This username is not different from the current one.")
+            await message.edit_text(
+                "This username is not different from the current one.", message_ttl=config.DEFAULT_TTL
+            )
         except UsernameOccupied:
-            await message.edit_text("This username is already taken.")
+            await message.edit_text("This username is taken.", config.DEFAULT_TTL)
         except UsernameInvalid:
             if len(new_username) > 32:
-                await message.edit_text("This username is too long.")
+                await message.edit_text("This username is too long.", message_ttl=config.DEFAULT_TTL)
             else:
-                await message.edit_text("This username is invalid.")
+                await message.edit_text("This username is invalid.", message_ttl=config.DEFAULT_TTL)
         except FloodWait as ex:
-            await message.edit_text(f"<b>FloodWait</b>, retry in <code>{ex.x}</code> seconds.")
-
-    await clean_up(client, message.chat.id, message.message_id)
+            await message.edit_text(f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5)
 
 
 @Client.on_message(filters.me & filters.command(["bio", "about"], prefixes="."))
-async def bio(client: Client, message: Message):
-    """
-    Change about info block. Supports "del" argument to clear the current bio.
-    """
-    args = get_args(message.text or message.caption, maximum=1)
+async def change_bio(client: Client, message: Message):
+    """Change about info block. Supports `del` argument to clear the current bio."""
+    args = message.get_args(maximum=1)
     if not args:
-        await message.edit_text("Pass your new about info.\n<code>.bio del</code> to delete it.")
+        await message.edit_text(
+            "Pass your new about info.\n<code>.bio del</code> to delete it.", message_ttl=config.DEFAULT_TTL
+        )
     else:
-        if args == "del":
-            args = ""
+        new_bio = args[0]
+        if new_bio == "del":
+            new_bio = ""
             text = "Your bio's been deleted."
         else:
-            text = f"Your bio's been updated to:\n<code>{quote_html(args[:70])}</code>"
+            me = await client.get_me()
+            me_chat = await client.get_chat(me.id)
+            if me_chat.bio == new_bio:
+                return await message.edit_text(
+                    "This text is no different from your current bio.", message_ttl=config.DEFAULT_TTL
+                )
+
+            text = f"Your bio's been updated to:\n<code>{quote_html(new_bio[:70])}</code>"
 
         try:
-            await client.update_profile(bio=args[:70])  # Max bio length is 70 chars
-            await message.edit_text(text)
+            await client.update_profile(bio=new_bio[:70])  # Max bio length is 70 chars, so we`ll cut it
+            await message.edit_text(text, message_ttl=10)
         except FloodWait as ex:
-            await message.edit_text(f"<b>FloodWait</b>, retry in <code>{ex.x}</code> seconds.")
-
-    await clean_up(client, message.chat.id, message.message_id)
+            await message.edit_text(f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5)

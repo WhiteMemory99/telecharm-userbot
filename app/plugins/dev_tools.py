@@ -1,14 +1,11 @@
-from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram import filters
 
-from app.utils import clean_up, quote_html
+from app.utils import quote_html, Client, Message
 
 
 @Client.on_message(filters.me & filters.command("bdata", prefixes="."))
-async def get_buttons_data(client: Client, message: Message):
-    """
-    Get callback_data and urls of all the inline buttons of the message you replied to.
-    """
+async def get_buttons_data(_, message: Message):
+    """Get callback_data and urls of all the inline buttons of the message you replied to."""
     reply_message = message.reply_to_message
     if reply_message and reply_message.reply_markup:
         if reply_message.reply_markup.inline_keyboard:
@@ -29,13 +26,13 @@ async def get_buttons_data(client: Client, message: Message):
                 row_lines.append(f"<b>Row {i + 1}:</b>\n{buttons}")
 
             if row_lines:
-                clean_time = 20
-                await message.edit_text("\n\n".join(row_lines))
+                await message.edit_text("\n\n".join(row_lines), message_ttl=25)
             else:
-                clean_time = 4
-                await message.edit_text("There is no any callback_data or url button inside this keyboard.")
-
-            return await clean_up(client, message.chat.id, message.message_id, clear_after=clean_time)
-
-    await message.edit_text("Reply to a message containing an inline keyboard to extract callback_data and urls.")
-    await clean_up(client, message.chat.id, message.message_id, clear_after=4)
+                await message.edit_text(
+                    "There is no any callback_data or url button inside this keyboard.", message_ttl=5
+                )
+    else:
+        await message.edit_text(
+            "Reply to a message containing inline keyboard to extract callback_data and urls.",
+            message_ttl=5
+        )

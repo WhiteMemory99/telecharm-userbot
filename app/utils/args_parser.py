@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
 from pyrogram.errors import RPCError
-from pyrogram.types import Message, User
+from pyrogram.types import User
 
-from app.utils.helper import extract_entity_text, get_args
+from app.utils.types import Message
+from app.utils.helper import extract_entity_text
 
 MODIFIERS = {
     "w": datetime.timedelta(weeks=1),
@@ -34,7 +35,7 @@ class CommandArgs:
 TIMEDELTA_PATTERN = re.compile(r"\b(?P<timedelta>\d+[smhdw])\b")
 
 
-async def parse_command(message: Message, with_time: bool = True) -> Optional[CommandArgs]:
+async def parse_command(message: Message, with_time: bool = True) -> Optional[CommandArgs]:  # TODO: Reason support
     """
     Parse command arguments to extract user data, timedelta and other info.
 
@@ -60,8 +61,7 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
             elif entity.type == "text_mention":
                 return await build_args(message, entity.user.id, timedelta, response_text)
 
-    args = get_args(message.text or message.caption, maximum=0)
-    for item in args[:5]:  # Look for IDs in the args
+    for item in message.get_args()[:5]:  # Look for IDs in the args
         try:
             return await build_args(message, int(item), timedelta, response_text)
         except ValueError:

@@ -1,7 +1,7 @@
 from typing import Union
 
 from loguru import logger
-from pyrogram import Client, filters
+from pyrogram import filters
 from pyrogram.errors import (
     ChannelPrivate,
     InviteHashInvalid,
@@ -10,9 +10,10 @@ from pyrogram.errors import (
     UsernameInvalid,
     UsernameNotOccupied,
 )
-from pyrogram.types import Chat, ChatPreview, Message, User
+from pyrogram.types import Chat, ChatPreview, User
 
-from app.utils import clean_up, get_args, quote_html
+from app import config
+from app.utils import quote_html, Client, Message
 
 STATUS = {
     True: "Yes",
@@ -30,30 +31,27 @@ DC_LOCATIONS = {
 
 @Client.on_message(filters.me & filters.command(["resolve", "whois", "id"], prefixes="."))
 async def resolve_command(client: Client, message: Message):
-    """
-    Resolve an ID/Username/Invite Link, works on users, groups and channels.
-    """
+    """Resolve an ID/Username/Invite Link, works for users, groups and channels."""
     info = None
-    entity = get_args(message.text or message.caption, maximum=1)
-    if entity:  # Argument specified
+    if entity := message.get_args(maximum=1):
         try:
-            target: Chat = await client.get_chat(entity)
+            target: Chat = await client.get_chat(entity[0])
             if target.type == "private":  # Get a User object instead
                 target: User = await client.get_users(target.id)
 
             info = get_entity_info(target)
         except (UsernameNotOccupied, UsernameInvalid):
-            await message.edit_text("Wrong <b>username</b> specified.")
+            await message.edit_text("Wrong <b>username</b> specified.", message_ttl=config.DEFAULT_TTL)
         except PeerIdInvalid:
-            await message.edit_text("Wrong <b>ID</b> specified.")
+            await message.edit_text("Wrong <b>ID</b> specified.", message_ttl=config.DEFAULT_TTL)
         except InviteHashInvalid:
-            await message.edit_text("Wrong <b>invitation link</b> specified.")
+            await message.edit_text("Wrong <b>invitation link</b> specified.", message_ttl=config.DEFAULT_TTL)
         except ChannelPrivate:
-            await message.edit_text("Specified target cannot be accessed.")
+            await message.edit_text("Specified target cannot be accessed.", message_ttl=config.DEFAULT_TTL)
         except RPCError as ex:
             logger.error(f"Could not resolve an entity due to {ex}")
-            await message.edit_text("Specified argument is invalid.")
-    else:  # Argument not specified
+            await message.edit_text("Specified argument is invalid.", message_ttl=config.DEFAULT_TTL)
+    else:
         if message.reply_to_message:  # It's a reply to another message
             if message.reply_to_message.from_user:
                 info = get_entity_info(message.reply_to_message.from_user)
@@ -62,18 +60,16 @@ async def resolve_command(client: Client, message: Message):
                     info = get_entity_info(message.reply_to_message.forward_from_chat)
                 except KeyError:
                     await message.edit_text(
-                        f"Target <b>{message.reply_to_message.forward_from_chat.type}</b> cannot be accessed."
+                        f"Target <b>{message.reply_to_message.forward_from_chat.type}</b> cannot be accessed.",
+                        message_ttl=config.DEFAULT_TTL
                     )
             else:
-                await message.edit_text("Unable to resolve this message.")
+                await message.edit_text("Unable to resolve this message.", message_ttl=config.DEFAULT_TTL)
         else:
             info = get_entity_info(message.from_user)
 
-    if info:  # If we successfully got the info
-        await message.edit_text(info, disable_web_page_preview=True)
-        await clean_up(client, message.chat.id, message.message_id, clear_after=15)
-    else:
-        await clean_up(client, message.chat.id, message.message_id)
+    if info:  # We successfully got the info
+        await message.edit_text(info, disable_web_page_preview=True, message_ttl=20)
 
 
 def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:

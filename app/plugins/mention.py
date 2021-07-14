@@ -1,23 +1,22 @@
-from pyrogram import Client, filters
+from pyrogram import filters
 from pyrogram.errors import RPCError
-from pyrogram.types import Message, User
+from pyrogram.types import User
 
-from app.utils import clean_up, get_args
+from app import config
+from app.utils import Client, Message
 
 
 @Client.on_message(filters.me & filters.command("mention", prefixes="."))
 async def mention_command(client: Client, message: Message):
-    """
-    Mention a user in any chat by their username as in some Telegram clients.
-    """
-    args = get_args(message.text or message.caption, maximum=1)
+    """Mention a user in any chat by their username as in some Telegram clients."""
+    args = message.get_args(maximum=1)
     if not args:
         await message.edit_text(
             "Pass the user you want to text-mention:\n<code>.mention @username.Optional text</code>",
+            message_ttl=config.DEFAULT_TTL
         )
-        await clean_up(client, message.chat.id, message.message_id)
     else:
-        mention_parts = args.split(".", maxsplit=1)
+        mention_parts = args[0].split(".", maxsplit=1)
         try:
             user: User = await client.get_users(mention_parts[0])
             text = None if len(mention_parts) == 1 else mention_parts[1]
@@ -34,5 +33,4 @@ async def mention_command(client: Client, message: Message):
 
             await message.edit_text(link)
         except RPCError:
-            await message.edit_text("Specified username is incorrect.")
-            await clean_up(client, message.chat.id, message.message_id)
+            await message.edit_text("Specified username is incorrect.", message_ttl=config.DEFAULT_TTL)

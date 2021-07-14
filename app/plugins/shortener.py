@@ -1,18 +1,16 @@
 import asyncio
 from typing import List
 
-import httpx
-from pyrogram import Client, filters
-from pyrogram.types import Message, MessageEntity
+from pyrogram import filters
+from pyrogram.types import MessageEntity
 
-from app.utils import clean_up, extract_entity_text
+from app import config
+from app.utils import extract_entity_text, Client, Message
 
 
 @Client.on_message(filters.me & filters.command(["short", "clck"], prefixes="."))
 async def shorten_url(client: Client, message: Message):
-    """
-    Shorten URLs contained in the outgoing and/or reply message text.
-    """
+    """Shorten URLs contained in outgoing and/or reply messages."""
     urls = []
     entities = message.entities or message.caption_entities
     if entities:  # There are outgoing entities
@@ -23,18 +21,19 @@ async def shorten_url(client: Client, message: Message):
             urls += get_text_urls(message.reply_to_message.text or message.reply_to_message.caption, entities)
 
     if urls:
-        async with httpx.AsyncClient() as http_client:
-            responses = await asyncio.gather(
-                *[http_client.post("https://clck.ru/--", params={"url": url}) for url in urls[:100]]
-            )
+        responses = await asyncio.gather(
+            *[client.http_client.post("https://clck.ru/--", params={"url": url}) for url in urls[:100]]
+        )
 
         await message.edit_text(
             "\n".join(f"<b>-</b> {response.text}" for response in responses if response.status_code == 200),
             disable_web_page_preview=True,
         )
-    else:
-        await message.edit_text("<b>Reply to message</b> or provide a <b>link</b>, supports up to 100 links.")
-        await clean_up(client, message.chat.id, message.message_id)
+    else:  # TODO: Remove the limit and wrap the message
+        await message.edit_text(
+            "<b>Reply to message</b> or provide a <b>link</b>, supports up to 100 links at once.",
+            message_ttl=config.DEFAULT_TTL
+        )
 
 
 def get_text_urls(text: str, entities: List[MessageEntity]) -> list:
