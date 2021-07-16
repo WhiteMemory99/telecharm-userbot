@@ -71,6 +71,54 @@ personal guide page.
 
 Thanks for using **Telecharm** :)
 
-## Writing custom plugins
+## Writing and using custom plugins
 
-_SOON_
+1. First things first, all custom plugins are supposed to go to `app/plugins/custom`.
+
+2. Go to that folder and create a file named `example.py` as your first tutorial plugin.
+
+3. Insert the code below into the file and read all the comments to understand how it works.
+
+<details>
+<summary>Look at the example code</summary>
+
+```python
+"""
+app/plugins/custom/example.py
+This text would also appear in Telecharm guide as a module description.
+"""
+import asyncio
+from pyrogram import filters
+
+from app.config import conf
+from app.utils import Client, Message  # Use custom types for type-hinting
+from app.utils.decorators import doc_exclude, doc_args
+
+
+@Client.on_message(filters.me & filters.command("example", prefixes="."))
+@doc_args("arg_name", ("date", "time"))  # Let the Telecharm guide know about supported args (OPTIONAL)
+@doc_exclude  # This command will not appear in Telecharm guide, remove to check how the generation works :)
+async def example_handler(client: Client, message: Message):
+    """
+    This text would appear in Telecharm guide along with the command if it wasn't excluded.
+
+    You can even wrap it like that, or style with supported HTML text like <b><i>THIS</b></i>.
+    """
+    await message.edit_text("Hey, this is the example of a custom plugin command.", message_ttl=conf.default_ttl)
+    # message_ttl is used for message clean up feature, so be sure to take it seriously.
+    # For general and short replies use default_ttl provided in conf.
+
+    if client.settings.get("clean_up"):  # You can access and alter user settings with client.settings
+        await asyncio.sleep(1)
+        await message.reply_text(
+            "By the way, the clean up mode is on! So this message will disappear in 6 seconds.", message_ttl=6
+        )
+```
+
+For more advanced usage, inspect my code and look at `app/utils`. <br />
+Also, be sure to respect others and learn asyncio before writing plugins, so you don't ruin the whole experience.
+
+</details>
+
+4. That's basically all you need to do. You can restart Telecharm and use your new plugin. To update the guide, just
+   send `.help` to any chat.
