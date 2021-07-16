@@ -11,7 +11,7 @@ async def dot_auto_forwarding(client: Client, message: Message):
     Listen for messages sent in reply with a dot and
     automatically forward the replied message to the current chat.
     """
-    if client.settings.get("dot_auto_forward"):
+    if client.user_settings.get("dot_auto_forward"):
         await asyncio.gather(
             message.reply_to_message.forward(message.chat.id, disable_notification=True),
             message.delete(),

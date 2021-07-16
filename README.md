@@ -108,7 +108,7 @@ async def example_handler(client: Client, message: Message):
     # message_ttl is used for message clean up feature, so be sure to take it seriously.
     # For general and short replies use default_ttl provided in conf.
 
-    if client.settings.get("clean_up"):  # You can access and alter user settings with client.settings
+    if client.user_settings.get("clean_up"):  # You can access and alter user settings with client.user_settings
         await asyncio.sleep(1)
         await message.reply_text(
             "By the way, the clean up mode is on! So this message will disappear in 6 seconds.", message_ttl=6

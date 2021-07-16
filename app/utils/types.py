@@ -14,7 +14,7 @@ from app.storage.json_storage import JSONStorage
 
 class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings?
     def __init__(self, *args, **kwargs):
-        self.settings = JSONStorage("app/storage/storage.json")  # This path is safe thanks to pathlib
+        self.user_settings = JSONStorage("app/storage/storage.json")  # This path is safe thanks to pathlib
         self.http_client = httpx.AsyncClient(http2=True, timeout=15.0)
         super().__init__(*args, **kwargs)
 
@@ -25,7 +25,7 @@ class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings
     async def clean_up(
         self, chat_id: Union[int, str], message_id: int, message_ttl: Union[int, float]
     ) -> None:
-        if self.settings.get("clean_up"):
+        if self.user_settings.get("clean_up"):
             await asyncio.sleep(message_ttl)
             try:
                 await self.delete_messages(chat_id, message_id)

@@ -129,16 +129,16 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
     This command lets you access and update this page.
     Also, you can easily share telecharm this way, since it contains all the necessary info and links.
     """
-    help_url = client.settings.get("help_current_url")
-    last_timestamp = client.settings.get("help_generation_timestamp")
+    help_url = client.user_settings.get("help_current_url")
+    last_timestamp = client.user_settings.get("help_generation_timestamp")
 
     eligible_timestamp = (datetime.utcnow() - timedelta(hours=6)).timestamp()  # TODO: Rework
     if not last_timestamp or not help_url or last_timestamp < eligible_timestamp:
-        telegraph_token = client.settings.get("telegraph_access_token")
+        telegraph_token = client.user_settings.get("telegraph_access_token")
         telegraph = Telegraph(token=telegraph_token)
         if not telegraph_token:
             result = await telegraph.create_account("Telecharm service")
-            client.settings.set("telegraph_access_token", result.access_token)
+            client.user_settings.set("telegraph_access_token", result.access_token)
 
         page_title = "Telecharm Guide"
         content = prepare_page_content(client)
@@ -148,8 +148,8 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
             result = await telegraph.create_page(page_title, content)
 
         help_url = result.url
-        client.settings.set("help_current_url", result.url)
-        client.settings.set("help_generation_timestamp", datetime.utcnow().timestamp())
+        client.user_settings.set("help_current_url", result.url)
+        client.user_settings.set("help_generation_timestamp", datetime.utcnow().timestamp())
         await telegraph.close()
 
     await message.edit_text(
