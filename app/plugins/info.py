@@ -124,7 +124,7 @@ def prepare_page_content(client: Client) -> str:
 
 
 @Client.on_message(filters.me & filters.command(["help", "share"], prefixes="."))
-async def help_command(client: Client, message: Message):
+async def help_command(client: Client, message: Message):  # TODO: Add last time updated?
     """
     This command lets you access and update this page.
     Also, you can easily share telecharm this way, since it contains all the necessary info and links.
@@ -132,7 +132,7 @@ async def help_command(client: Client, message: Message):
     help_url = client.settings.get("help_current_url")
     last_timestamp = client.settings.get("help_generation_timestamp")
 
-    eligible_timestamp = (datetime.utcnow() - timedelta(hours=12)).timestamp()  # Update every 12 hours
+    eligible_timestamp = (datetime.utcnow() - timedelta(hours=6)).timestamp()  # TODO: Rework
     if not last_timestamp or not help_url or last_timestamp < eligible_timestamp:
         telegraph_token = client.settings.get("telegraph_access_token")
         telegraph = Telegraph(token=telegraph_token)

@@ -1,11 +1,11 @@
-from typing import Callable, Tuple, Union
+from typing import Callable, Union
 
 USER_IDENTIFIERS = ("id", "username", "mention")
 CHAT_IDENTIFIERS = ("id", "username", "invite link")
 DURATION = "duration"
 
 
-def doc_args(*args: Union[str, Tuple[str]]) -> callable:
+def doc_args(*args: Union[str, tuple]) -> callable:
     """
     Provide arguments for a command handler,
     they will appear in auto-generated Telecharm guide.

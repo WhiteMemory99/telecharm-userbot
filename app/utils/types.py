@@ -88,6 +88,34 @@ class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings
 
         return sent_message
 
+    async def send_message(
+        self,
+        chat_id: Union[int, str],
+        text: str,
+        parse_mode: Optional[str] = object,
+        entities: List["MessageEntity"] = None,
+        disable_web_page_preview: bool = None,
+        disable_notification: bool = None,
+        reply_to_message_id: int = None,
+        schedule_date: int = None,
+        reply_markup: Union[
+            "InlineKeyboardMarkup",
+            "ReplyKeyboardMarkup",
+            "ReplyKeyboardRemove",
+            "ForceReply"
+        ] = None,
+        message_ttl: Optional[Union[int, float]] = None
+    ) -> "Message":
+        sent_message = await super().send_message(
+            chat_id, text, parse_mode, entities, disable_web_page_preview, disable_notification, reply_to_message_id,
+            schedule_date, reply_markup
+        )
+
+        if message_ttl:
+            asyncio.create_task(self.clean_up(chat_id, sent_message.message_id, message_ttl))
+
+        return sent_message
+
 
 class Message(PyrogramMessage):
     _client: Client
@@ -108,6 +136,36 @@ class Message(PyrogramMessage):
             parse_mode=parse_mode,
             entities=entities,
             disable_web_page_preview=disable_web_page_preview,
+            reply_markup=reply_markup,
+            message_ttl=message_ttl
+        )
+
+    async def reply_text(
+        self,
+        text: str,
+        quote: bool = None,
+        parse_mode: Optional[str] = object,
+        entities: List["MessageEntity"] = None,
+        disable_web_page_preview: bool = None,
+        disable_notification: bool = None,
+        reply_to_message_id: int = None,
+        reply_markup=None,
+        message_ttl: Optional[Union[int, float]] = None
+    ) -> "Message":
+        if quote is None:
+            quote = self.chat.type != "private"
+
+        if reply_to_message_id is None and quote:
+            reply_to_message_id = self.message_id
+
+        return await self._client.send_message(
+            chat_id=self.chat.id,
+            text=text,
+            parse_mode=parse_mode,
+            entities=entities,
+            disable_web_page_preview=disable_web_page_preview,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
             reply_markup=reply_markup,
             message_ttl=message_ttl
         )
