@@ -1,13 +1,17 @@
 from pyrogram import filters
 from pyrogram.errors import FirstnameInvalid, FloodWait, UsernameInvalid, UsernameNotModified, UsernameOccupied
 
-from app import config
+from app.config import conf
 from app.utils import quote_html, Client, Message
+from app.utils.decorators import doc_args
 
 
 @Client.on_message(filters.me & filters.command("stats", prefixes="."))
 async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
-    """Gather profile stats containing chats info for you."""
+    """
+    Get some interesting statistics on your chats and profile.
+    <i>This command shows the most unread chat, so beware of leaking some shameful stuff to others</i> :D
+    """
     await message.edit_text("<i>Gathering info...</i>")
     user_list = []
     peak_unread_chat = None
@@ -50,12 +54,17 @@ async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
 
 
 @Client.on_message(filters.me & filters.command("name", prefixes="."))
+@doc_args("name")
 async def change_name(client: Client, message: Message):
-    """Change profile name, this command is flexible and has auto-balancing for long names."""
+    """
+    Change the profile first name and/or last name,
+    this command is flexible and has auto-balancing for long and messy names.
+    The max allowed length in sum is 128.
+    """
     args = message.get_args()
     if not args:
         await message.edit_text(
-            "Pass your new name.\n<code>.name I'm a superman!</code>", message_ttl=config.DEFAULT_TTL
+            "Pass your new name.\n<code>.name I'm a superman!</code>", message_ttl=conf.default_ttl
         )
     else:
         if len(args) == 1:
@@ -64,7 +73,7 @@ async def change_name(client: Client, message: Message):
         elif len(args) == 2:
             first_name = args[0][:64]
             last_name = args[1][:64]
-        else:  # A quite complex name specified, so we have to balance it a little
+        else:  # Quite a complex name specified, so we have to balance it a little
             divider = len(args) // 2
             first_name = " ".join(args[:divider])[:64]
             last_name = " ".join(args[divider:])[:64]
@@ -76,18 +85,22 @@ async def change_name(client: Client, message: Message):
                 f"Your name's been changed to:\n<code>{quote_html(full_name)}</code>", message_ttl=5
             )
         except FirstnameInvalid:
-            await message.edit_text("Your new first name is invalid.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Your new first name is invalid.", message_ttl=conf.default_ttl)
         except FloodWait as ex:
             await message.edit_text(f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5)
 
 
 @Client.on_message(filters.me & filters.command("username", prefixes="."))
+@doc_args("username")
 async def change_username(client: Client, message: Message):
-    """Change profile username. Supports `del` argument to delete the current username if there is one."""
+    """
+    Change the profile username. The text length can't be more than 32.
+    Supports `<code>del</code>` argument to delete the current username, if there is one.
+    """
     args = message.get_args(maximum=1)
     if not args:
         await message.edit_text(
-            "Pass your new username.\n<code>.username del</code> to delete it.", message_ttl=config.DEFAULT_TTL
+            "Pass your new username.\n<code>.username del</code> to delete it.", message_ttl=conf.default_ttl
         )
     else:
         new_username = args[0].lstrip("@")
@@ -102,26 +115,30 @@ async def change_username(client: Client, message: Message):
             await message.edit_text(text, message_ttl=5)
         except UsernameNotModified:
             await message.edit_text(
-                "This username is not different from the current one.", message_ttl=config.DEFAULT_TTL
+                "This username is not different from the current one.", message_ttl=conf.default_ttl
             )
         except UsernameOccupied:
-            await message.edit_text("This username is taken.", config.DEFAULT_TTL)
+            await message.edit_text("This username is taken.", conf.default_ttl)
         except UsernameInvalid:
             if len(new_username) > 32:
-                await message.edit_text("This username is too long.", message_ttl=config.DEFAULT_TTL)
+                await message.edit_text("This username is too long.", message_ttl=conf.default_ttl)
             else:
-                await message.edit_text("This username is invalid.", message_ttl=config.DEFAULT_TTL)
+                await message.edit_text("This username is invalid.", message_ttl=conf.default_ttl)
         except FloodWait as ex:
             await message.edit_text(f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5)
 
 
 @Client.on_message(filters.me & filters.command(["bio", "about"], prefixes="."))
+@doc_args("text")
 async def change_bio(client: Client, message: Message):
-    """Change about info block. Supports `del` argument to clear the current bio."""
+    """
+    Change the profile about block. The text length can't be more than 70, the rest part will be cut.
+    Supports `<code>del</code>` argument to delete the current bio, if there is one.
+    """
     args = message.get_args(maximum=1)
     if not args:
         await message.edit_text(
-            "Pass your new about info.\n<code>.bio del</code> to delete it.", message_ttl=config.DEFAULT_TTL
+            "Pass your new about info.\n<code>.bio del</code> to delete it.", message_ttl=conf.default_ttl
         )
     else:
         new_bio = args[0]
@@ -133,7 +150,7 @@ async def change_bio(client: Client, message: Message):
             me_chat = await client.get_chat(me.id)
             if me_chat.bio == new_bio:
                 return await message.edit_text(
-                    "This text is no different from your current bio.", message_ttl=config.DEFAULT_TTL
+                    "This text is no different from your current bio.", message_ttl=conf.default_ttl
                 )
 
             text = f"Your bio's been updated to:\n<code>{quote_html(new_bio[:70])}</code>"

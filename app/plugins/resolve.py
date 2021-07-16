@@ -12,8 +12,9 @@ from pyrogram.errors import (
 )
 from pyrogram.types import Chat, ChatPreview, User
 
-from app import config
+from app.config import conf
 from app.utils import quote_html, Client, Message
+from app.utils.decorators import doc_args, CHAT_IDENTIFIERS
 
 STATUS = {
     True: "Yes",
@@ -30,8 +31,12 @@ DC_LOCATIONS = {
 
 
 @Client.on_message(filters.me & filters.command(["resolve", "whois", "id"], prefixes="."))
+@doc_args(CHAT_IDENTIFIERS)
 async def resolve_command(client: Client, message: Message):
-    """Resolve an ID/Username/Invite Link, works for users, groups and channels."""
+    """
+    Get some information about a user, channel or group by specifying a proper identifier.
+    If the target is a private group or channel, the information you receive will be <b>limited</b>.
+    """
     info = None
     if entity := message.get_args(maximum=1):
         try:
@@ -41,16 +46,16 @@ async def resolve_command(client: Client, message: Message):
 
             info = get_entity_info(target)
         except (UsernameNotOccupied, UsernameInvalid):
-            await message.edit_text("Wrong <b>username</b> specified.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Wrong <b>username</b> specified.", message_ttl=conf.default_ttl)
         except PeerIdInvalid:
-            await message.edit_text("Wrong <b>ID</b> specified.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Wrong <b>ID</b> specified.", message_ttl=conf.default_ttl)
         except InviteHashInvalid:
-            await message.edit_text("Wrong <b>invitation link</b> specified.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Wrong <b>invitation link</b> specified.", message_ttl=conf.default_ttl)
         except ChannelPrivate:
-            await message.edit_text("Specified target cannot be accessed.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Specified target cannot be accessed.", message_ttl=conf.default_ttl)
         except RPCError as ex:
             logger.error(f"Could not resolve an entity due to {ex}")
-            await message.edit_text("Specified argument is invalid.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Specified argument is invalid.", message_ttl=conf.default_ttl)
     else:
         if message.reply_to_message:  # It's a reply to another message
             if message.reply_to_message.from_user:
@@ -61,10 +66,10 @@ async def resolve_command(client: Client, message: Message):
                 except KeyError:
                     await message.edit_text(
                         f"Target <b>{message.reply_to_message.forward_from_chat.type}</b> cannot be accessed.",
-                        message_ttl=config.DEFAULT_TTL
+                        message_ttl=conf.default_ttl
                     )
             else:
-                await message.edit_text("Unable to resolve this message.", message_ttl=config.DEFAULT_TTL)
+                await message.edit_text("Unable to resolve this message.", message_ttl=conf.default_ttl)
         else:
             info = get_entity_info(message.from_user)
 

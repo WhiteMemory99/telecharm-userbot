@@ -2,8 +2,9 @@ import asyncio
 
 from pyrogram import filters
 
-from app import config
+from app.config import conf
 from app.utils import Client, Message
+from app.utils.decorators import doc_args
 
 LAYOUTS = {
     'ru': "ё1234567890-=Ё!\"№;%:?*()_+йцукенгшщзхъ\\ЙЦУКЕНГШЩЗХЪ/фывапролджэФЫВАПРОЛДЖЭячсмитьбю.ЯЧСМИТЬБЮ,",
@@ -24,23 +25,22 @@ async def change_keyboard_layout(text: str, from_layout: str, to_layout: str) ->
 
 
 @Client.on_message(filters.me & filters.command("layout", prefixes="."))
+@doc_args("language code")
 async def layout_command(client: Client, message: Message):
     """
-    Change the keyboard layout of a message.
-
-    Example:
-        from: руддщ!
-        to: hello!
+    Change the keyboard layout of a message. The language code is <b>optional</b>.
+    If the message is yours, it will be edited. If the message isn't yours, the new one will be sent.
+    <b>Example of the command in action:</b> <code>Ghbdtn</code> >> <code>Привет</code>.
     """
     if not message.reply_to_message:
-        await message.edit_text("You must reply to a message to change its layout.", message_ttl=config.DEFAULT_TTL)
+        await message.edit_text("You must reply to a message to change its layout.", message_ttl=conf.default_ttl)
 
     text = message.reply_to_message.text or message.reply_to_message.caption
     entities = message.reply_to_message.entities or message.reply_to_message.caption_entities
     current_layout = LAYOUTS[await get_current_layout(text)]
 
     if args := message.get_args():
-        to_layout = LAYOUTS.get(args[0], None)
+        to_layout = LAYOUTS.get(args[0].lower(), None)
     else:
         to_layout = [layout for layout in LAYOUTS.values() if layout != current_layout][0]
 
@@ -56,4 +56,4 @@ async def layout_command(client: Client, message: Message):
             message.delete(),
         )
     else:
-        await message.edit_text(changed_text, entities=entities, message_ttl=60)
+        await message.edit_text(changed_text, entities=entities, message_ttl=40)

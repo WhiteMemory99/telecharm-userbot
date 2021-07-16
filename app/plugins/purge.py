@@ -5,11 +5,17 @@ from pyrogram import filters
 from pyrogram.errors import RPCError
 
 from app.utils import Client, Message
+from app.utils.decorators import doc_args
 
 
 @Client.on_message(filters.me & filters.reply & filters.command("purge", prefixes="."))
+@doc_args("me")
 async def purge_command(client: Client, message: Message):
-    """Purge messages in any chat, supports 2 working modes: my messages and all messages."""
+    """
+    Bulk delete of messages. Just reply to the oldest message you want to clear to.
+    By default, deletes all the messages, unless used in a group without admin privileges.
+    You can also force this command to delete only your messages by providing `<code>me</code>` argument.
+    """
     me_mode = "me" in message.get_args()
 
     if message.chat.type in ("group", "supergroup") and not me_mode:  # Check admin rights if we delete all messages

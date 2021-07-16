@@ -5,14 +5,18 @@ from io import StringIO
 from pyrogram import filters
 
 from app.utils import quote_html, Client, Message
+from app.utils.decorators import doc_args
 
 
 @Client.on_message(filters.me & filters.command("py", prefixes="."))
+@doc_args("code")
 async def execute_python(client: Client, message: Message):
     """
-    Execute any Python 3 code. Native async code is unsupported,
-    so import asyncio and run it manually whenever you need it.
-    Note that the Client and Message are available for you here.
+    Execute <s>almost</s> any Python 3 code. Native async code is unsupported, so import asyncio and run
+    it manually whenever you need it.
+    Note that the Client and Message <b>are available</b> for you in here.
+    Also, be wary of security threats when using this command, and <b>DO NOT</b> use any suspicious
+    code given by other people.
     """
     if args := message.get_args(maximum=1):
         clear_timeout = 20.5

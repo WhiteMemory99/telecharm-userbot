@@ -11,3 +11,6 @@ __pycache__/
 *.session
 *.session-journal
 *.json
+
+# Custom plugins
+app/plugins/custom

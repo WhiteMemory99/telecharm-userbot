@@ -1,11 +1,22 @@
+from dataclasses import dataclass
+from typing import Union
+
 from envparse import env
 
 env.read_envfile()
 
-API_ID = env.int("API_ID")
-API_HASH = env.str("API_HASH")
 
-GITHUB_LINK = "https://github.com/WhiteMemory99/telecharm-userbot"
-GUIDE_LINK = "https://telegra.ph/Telecharm-advanced-commands-08-19"
+@dataclass(frozen=True)
+class Config:
+    api_id: int
+    api_hash: str
+    github_url: str
+    default_ttl: Union[int, float]
 
-DEFAULT_TTL = 3.5
+
+conf = Config(
+    api_id=env.int("API_ID"),
+    api_hash=env.str("API_HASH"),
+    github_url="https://github.com/WhiteMemory99/telecharm-userbot",
+    default_ttl=3.5,
+)

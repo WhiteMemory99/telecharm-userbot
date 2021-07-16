@@ -18,6 +18,8 @@ uvloop = { version = "^0.14.0", optional = true }
 ujson = { version = "^4.0.1", optional = true }
 requests = "^2.25.1"
 pydantic = "^1.8.2"
+aiographfix = "^0.2.2"
+aiohttp = {extras = ["speedups"], version = "^3.7.4"}
 
 [tool.poetry.dev-dependencies]
 

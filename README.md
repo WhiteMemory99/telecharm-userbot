@@ -65,6 +65,12 @@ state, so feel free to contribute.
 
 ## Usage
 
-After logging in just send `.help` command to any chat to get the available commands or share Telecharm.
+Telecharm will automatically gather, generate and update documentation for all the commands you have. No matter whether
+you use 3-rd party plugins or write them yourself. <br />At first launch, send `.help` to any chat to create your
+personal guide page.
 
 Thanks for using **Telecharm** :)
+
+## Writing custom plugins
+
+_SOON_

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, ValidationError, validator
 from pyrogram import filters
 from pyrogram.types import Animation, Document, Video
 
-from app import config
+from app.config import conf
 from app.utils import quote_html, Client, Message
 
 try:
@@ -119,14 +119,19 @@ class AnimeResult(BaseModel):
 
 
 @Client.on_message(filters.me & filters.command(["anime", "whatanime"], prefixes="."))
-async def find_anime(client: Client, message: Message):
-    """Get info about an anime based on a photo/video/GIF/document."""
+async def find_anime(client: Client, message: Message):  # TODO: Support video document?
+    """
+    Find anime source by replying to a photo, <b>image</b> document, GIF or video.
+    If successful, you will receive basic info about the found anime.
+
+    Note, that <code>opencv-python</code> is required for GIF and video support.
+    """
     target_msg = message.reply_to_message if message.reply_to_message else message
     media = target_msg.photo or target_msg.video or target_msg.animation or target_msg.document
 
     if media is None or (isinstance(media, Document) and "image" not in media.mime_type):
         await message.edit_text(
-            "A photo, video, GIF or <b>image</b> document is required.", message_ttl=config.DEFAULT_TTL
+            "A photo, video, GIF or <b>image</b> document is required.", message_ttl=conf.default_ttl
         )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
@@ -137,7 +142,7 @@ async def find_anime(client: Client, message: Message):
                     file_path = get_video_frame(file_path)
                 else:
                     return await message.edit_text(
-                        "This media type requires <code>opencv-python</code>.", message_ttl=config.DEFAULT_TTL
+                        "This media type requires <code>opencv-python</code>.", message_ttl=conf.default_ttl
                     )
 
             try:
@@ -156,12 +161,12 @@ async def find_anime(client: Client, message: Message):
                 await message.delete()
             except httpx.ReadTimeout:
                 await message.edit_text(
-                    "Failed to get info about this anime:\n<code>Read Timeout</code>", message_ttl=config.DEFAULT_TTL
+                    "Failed to get info about this anime:\n<code>Read Timeout</code>", message_ttl=conf.default_ttl
                 )
             except httpx.HTTPStatusError as ex:
                 description = httpx.codes.get_reason_phrase(ex.response.status_code)
                 await message.edit_text(
-                    f"Failed to get info about this anime:\n<code>{description}</code>", message_ttl=config.DEFAULT_TTL
+                    f"Failed to get info about this anime:\n<code>{description}</code>", message_ttl=conf.default_ttl
                 )
             except ValidationError:
                 await message.edit_text(

@@ -2,18 +2,24 @@ from pyrogram import filters
 from pyrogram.errors import RPCError
 from pyrogram.types import User
 
-from app import config
+from app.config import conf
 from app.utils import Client, Message
+from app.utils.decorators import doc_args
 
 
 @Client.on_message(filters.me & filters.command("mention", prefixes="."))
+@doc_args("username.optional text")
 async def mention_command(client: Client, message: Message):
-    """Mention a user in any chat by their username as in some Telegram clients."""
+    """
+    Generate mention link for a user by their username, as in some Telegram clients.
+    This command lets you specify an <b>optional</b> custom text for the link.
+    <b>For example:</b> `<code>.mention @username.Text That Would Appear Instead of User's Name</code>`.
+    """
     args = message.get_args(maximum=1)
     if not args:
         await message.edit_text(
             "Pass the user you want to text-mention:\n<code>.mention @username.Optional text</code>",
-            message_ttl=config.DEFAULT_TTL
+            message_ttl=conf.default_ttl
         )
     else:
         mention_parts = args[0].split(".", maxsplit=1)
@@ -33,4 +39,4 @@ async def mention_command(client: Client, message: Message):
 
             await message.edit_text(link)
         except RPCError:
-            await message.edit_text("Specified username is incorrect.", message_ttl=config.DEFAULT_TTL)
+            await message.edit_text("Specified username is incorrect.", message_ttl=conf.default_ttl)
