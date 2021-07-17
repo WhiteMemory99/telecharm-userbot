@@ -12,6 +12,7 @@ from pyrogram.handlers.handler import Handler
 from app import SysInfo, __version__
 from app.config import conf
 from app.utils import Client, Message
+from app.utils.decorators import doc_args
 
 
 class HandlerData(BaseModel):
@@ -119,11 +120,16 @@ def prepare_page_content(handlers: List[Handler]) -> str:
 
 
 @Client.on_message(filters.me & filters.command(["help", "share"], prefixes="."))
+@doc_args("nocache")
 async def help_command(client: Client, message: Message):  # TODO: Add last time updated?
     """
     This command lets you access and update this page.
     Also, you can easily share telecharm this way, since it contains all the necessary info and links.
+
+    By default, this guide is updated when either Telecharm version or number of registered commands has changed.
+    To force an update, pass `<code>nocache</code>`. It might be useful when updating a single custom plugin.
     """
+    no_cache = "nocache" in message.get_args()
     help_url = client.user_settings.get("help_current_url")
     last_version = client.user_settings.get("help_generation_version")
     last_handlers_number = client.user_settings.get("help_handlers_number")
@@ -133,7 +139,7 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
         all_handlers += group
 
     handlers_number = len(all_handlers)
-    if not help_url or last_version != __version__ or last_handlers_number != handlers_number:
+    if no_cache or not help_url or last_version != __version__ or last_handlers_number != handlers_number:
         telegraph_token = client.user_settings.get("telegraph_access_token")
         telegraph = Telegraph(token=telegraph_token)
         if not telegraph_token:
