@@ -161,7 +161,7 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
 
     await message.edit_text(
         f"<b>Telecharm v{__version__}</b>:\n\nFast, simple and cool Telegram userbot."
-        "\nIf you're a newbie, you can start with reading the auto-generated guide below."
+        "\nIf you're a newbie, you can start with the auto-generated guide below."
         f'\n\n<i><a href="{help_url}">Telecharm Guide</a>'
         f'\n<a href="{conf.github_url}">Telecharm on GitHub</a></i>',
         disable_web_page_preview=True,
