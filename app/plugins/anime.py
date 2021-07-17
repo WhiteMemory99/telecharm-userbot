@@ -68,7 +68,7 @@ class AnimeResult(BaseModel):
 
         if self.anilist.synonyms:
             synonyms = ", ".join(self.anilist.synonyms)
-            text = text + f"\n\n<b>Synonyms:</b> {synonyms}"
+            text += f"\n\n<b>Synonyms:</b> {synonyms}"
 
         return text
 

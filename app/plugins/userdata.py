@@ -59,7 +59,7 @@ async def change_name(client: Client, message: Message):
     """
     Change the profile first name and/or last name,
     this command is flexible and has auto-balancing for long and messy names.
-    The max allowed length in sum is 128.
+    The text length limit is <b>128</b>, the rest will be cut.
     """
     args = message.get_args()
     if not args:
@@ -94,7 +94,7 @@ async def change_name(client: Client, message: Message):
 @doc_args("username")
 async def change_username(client: Client, message: Message):
     """
-    Change the profile username. The text length can't be more than 32.
+    Change the profile username. The text length limit is <b>32</b>.
     Supports `<code>del</code>` argument to delete the current username, if there is one.
     """
     args = message.get_args(maximum=1)
@@ -132,7 +132,7 @@ async def change_username(client: Client, message: Message):
 @doc_args("text")
 async def change_bio(client: Client, message: Message):
     """
-    Change the profile about block. The text length can't be more than 70, the rest part will be cut.
+    Change the profile about block. The text length limit is <b>70</b>, the rest will be cut.
     Supports `<code>del</code>` argument to delete the current bio, if there is one.
     """
     args = message.get_args(maximum=1)
