@@ -60,4 +60,4 @@ class SysInfo:
         return "\n".join(self.collect())
 
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"

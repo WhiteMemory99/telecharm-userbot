@@ -1,6 +1,5 @@
 import sys
 import inspect
-from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel, validator
@@ -48,15 +47,11 @@ def get_command_filter(filter_obj: Filter):
     return None
 
 
-def get_eligible_data(client: Client) -> Tuple[Dict[str, List[HandlerData]], Dict[str, str]]:
+def get_eligible_data(handlers: List[Handler]) -> Tuple[Dict[str, List[HandlerData]], Dict[str, str]]:
     """Filter handlers and modules that contain docs and are not excluded and return them."""
-    all_handlers: List[Handler] = []
-    for group in client.dispatcher.groups.values():
-        all_handlers += group
-
     eligible_handlers = defaultdict(list)
     module_descriptions = {}
-    for handler in all_handlers:
+    for handler in handlers:
         if not handler.callback.__doc__ or getattr(handler.callback, "no_documentation", False):
             continue
 
@@ -77,9 +72,9 @@ def get_eligible_data(client: Client) -> Tuple[Dict[str, List[HandlerData]], Dic
     return eligible_handlers, module_descriptions
 
 
-def prepare_page_content(client: Client) -> str:
+def prepare_page_content(handlers: List[Handler]) -> str:
     """Prepare the Telegraph page content based on the data we receive from Pyrogram dispatcher."""
-    modules, module_descriptions = get_eligible_data(client)
+    modules, module_descriptions = get_eligible_data(handlers)
     text_blocks = [
         f"<aside><p>Welcome to <b>Telecharm v{__version__}</b> - the mighty, speedy and cool Telegram userbot!\n"
         "This page is created and updated automatically and individually, based on your plugins."
@@ -130,10 +125,15 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
     Also, you can easily share telecharm this way, since it contains all the necessary info and links.
     """
     help_url = client.user_settings.get("help_current_url")
-    last_timestamp = client.user_settings.get("help_generation_timestamp")
+    last_version = client.user_settings.get("help_generation_version")
+    last_handlers_number = client.user_settings.get("help_handlers_number")
 
-    eligible_timestamp = (datetime.utcnow() - timedelta(hours=6)).timestamp()  # TODO: Rework
-    if not last_timestamp or not help_url or last_timestamp < eligible_timestamp:
+    all_handlers: List[Handler] = []
+    for group in client.dispatcher.groups.values():
+        all_handlers += group
+
+    handlers_number = len(all_handlers)
+    if not help_url or last_version != __version__ or last_handlers_number != handlers_number:
         telegraph_token = client.user_settings.get("telegraph_access_token")
         telegraph = Telegraph(token=telegraph_token)
         if not telegraph_token:
@@ -141,7 +141,7 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
             client.user_settings.set("telegraph_access_token", result.access_token)
 
         page_title = "Telecharm Guide"
-        content = prepare_page_content(client)
+        content = prepare_page_content(all_handlers)
         if help_url:
             result = await telegraph.edit_page(help_url.split("/")[-1], page_title, content)
         else:
@@ -149,7 +149,8 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
 
         help_url = result.url
         client.user_settings.set("help_current_url", result.url)
-        client.user_settings.set("help_generation_timestamp", datetime.utcnow().timestamp())
+        client.user_settings.set("help_generation_version", __version__)
+        client.user_settings.set("help_handlers_number", handlers_number)
         await telegraph.close()
 
     await message.edit_text(
