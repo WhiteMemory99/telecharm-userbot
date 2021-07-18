@@ -25,6 +25,9 @@ class AnimeTitle(BaseModel):
 
     @validator("*")
     def secure_text(cls, v):
+        if not v:
+            return None
+
         return quote_html(v)
 
 
@@ -32,7 +35,7 @@ class AnilistData(BaseModel):
     id: int
     mal_id: int = Field(alias="idMal")
     title: AnimeTitle
-    synonyms: Optional[List[str]]
+    synonyms: List[str]
     is_adult: bool = Field(alias="isAdult")
 
     @validator("synonyms", each_item=True)
