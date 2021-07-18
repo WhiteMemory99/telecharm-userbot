@@ -17,7 +17,7 @@ if __name__ == "__main__":
         setattr(pyrogram.types.Message, name, func)
 
     Client(
-        session_name=Path(__file__).parent.name,
+        session_name=Path(__file__).parent.parent.name,
         api_id=conf.api_id,
         api_hash=conf.api_hash,
         plugins={"root": "app/plugins"},
