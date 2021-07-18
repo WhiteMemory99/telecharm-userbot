@@ -21,6 +21,27 @@ state, so feel free to contribute.
 3. Rename `.env.dist` to `.env` and open it.
 4. Edit `.env` file: fill in your `api_id`, `api_hash`.
 
+### Docker deployment
+
+**Make sure you have installed _[docker](https://docs.docker.com/get-docker/)_**
+
+1. Run build command
+```cmd
+docker build -t telecharm-image .
+```
+
+2. After building, start the userbot in interactive mode.
+```cmd
+docker run -it --name telecharm-bot telecharm-image
+```
+
+3. Enter your number, code for login from telegram app/SMS and 2FA password (if you have)
+4. Exit from interactive mode with Ctrl + C (or other keyboard combination depends on your system)
+5. Start the bot with command
+```cmd
+docker start telecharm-bot
+```
+
 ### Poetry deployment
 
 **_Make sure you have [poetry](https://python-poetry.org/docs/)._**
