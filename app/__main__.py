@@ -16,8 +16,14 @@ if __name__ == "__main__":
     for name, func in Message.__dict__.items():
         setattr(pyrogram.types.Message, name, func)
 
+    this_dir = Path(__file__).parent
+    session = pyrogram.client.FileStorage(
+        name=this_dir.parent.name,
+        workdir=this_dir / "storage"
+    )
+
     Client(
-        session_name=Path(__file__).parent.parent.name,
+        session_name=session,
         api_id=conf.api_id,
         api_hash=conf.api_hash,
         plugins={"root": "app/plugins"},

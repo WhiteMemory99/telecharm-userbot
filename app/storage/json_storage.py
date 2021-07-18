@@ -1,5 +1,5 @@
-import pathlib
-from typing import Any, Union
+from pathlib import Path
+from typing import Any, Union, Optional
 
 try:
     import ujson as json
@@ -12,8 +12,11 @@ class JSONStorage:
     JSON File storage to store user settings persistently.
     """
 
-    def __init__(self, path: str):
-        self.path = pathlib.Path(path)
+    def __init__(self, path: Optional[str] = None):
+        if path:
+            self.path = Path(path)
+        else:
+            self.path = Path(__file__).parent / "user_settings.json"
 
         try:
             self.data: dict = self.read()

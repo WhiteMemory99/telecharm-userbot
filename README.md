@@ -73,7 +73,7 @@ Thanks for using **Telecharm** :)
 
 ## Writing and using custom plugins
 
-1. First things first, all custom plugins are supposed to go to `app/plugins/custom`.
+1. By convention, all custom plugins are supposed to go to `app/plugins/custom`.
 
 2. Go to that folder and create a file named `example.py` as your first tutorial plugin.
 

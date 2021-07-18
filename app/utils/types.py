@@ -14,7 +14,7 @@ from app.storage.json_storage import JSONStorage
 
 class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings?
     def __init__(self, *args, **kwargs):
-        self.user_settings = JSONStorage("app/storage/storage.json")  # This path is safe thanks to pathlib
+        self.user_settings = JSONStorage()
         self.http_client = httpx.AsyncClient(http2=True, timeout=15.0)
         super().__init__(*args, **kwargs)
 
