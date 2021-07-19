@@ -14,3 +14,6 @@ __pycache__/
 
 # Custom plugins
 app/plugins/custom
+
+# Session, user settings, other files
+app/files

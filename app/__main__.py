@@ -18,9 +18,10 @@ if __name__ == "__main__":
 
     this_dir = Path(__file__).parent
     (this_dir / "plugins" / "custom").mkdir(exist_ok=True)
+    (this_dir / "files").mkdir(exist_ok=True)
     session = pyrogram.client.FileStorage(
         name=this_dir.parent.name,
-        workdir=this_dir / "storage"
+        workdir=this_dir / "files"
     )
 
     Client(

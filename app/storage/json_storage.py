@@ -16,7 +16,7 @@ class JSONStorage:
         if path:
             self.path = Path(path)
         else:
-            self.path = Path(__file__).parent / "user_settings.json"
+            self.path = Path(__file__).parent.parent / "files" / "user_settings.json"
 
         try:
             self.data: dict = self.read()

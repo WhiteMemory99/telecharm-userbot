@@ -12,7 +12,7 @@ from pyrogram.types import (
 from app.storage.json_storage import JSONStorage
 
 
-class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings?
+class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings? Rework all message types
     def __init__(self, *args, **kwargs):
         self.user_settings = JSONStorage()
         self.http_client = httpx.AsyncClient(http2=True, timeout=15.0)
