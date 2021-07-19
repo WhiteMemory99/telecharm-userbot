@@ -32,7 +32,7 @@ docker build -t telecharm-image .
 
 2. After building, start the userbot in interactive mode.
 ```cmd
-docker run -it --name telecharm-bot telecharm-image
+docker run -it -v pyrogram_sessions:/code/app/files --name telecharm-bot telecharm-image
 ```
 
 3. Enter your number, code for login from telegram app/SMS and 2FA password (if you have)
