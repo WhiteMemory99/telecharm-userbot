@@ -23,9 +23,9 @@ state, so feel free to contribute.
 
 ### Docker deployment
 
-**Make sure you have installed _[docker](https://docs.docker.com/get-docker/)_**
+**Make sure you have _[docker](https://docs.docker.com/get-docker/)_**.
 
-1. Run build command
+1. Build the image.
 ```cmd
 docker build -t telecharm-image .
 ```
@@ -35,9 +35,9 @@ docker build -t telecharm-image .
 docker run -it -v pyrogram_sessions:/code/app/files --name telecharm-bot telecharm-image
 ```
 
-3. Enter your number, code for login from telegram app/SMS and 2FA password (if you have)
-4. Exit from interactive mode with Ctrl + C (or other keyboard combination depends on your system)
-5. Start the bot with command
+3. Enter your number, auth code from Telegram and 2FA password, if you have one.
+4. Exit the interactive mode with **Ctrl+C** or any other combination, depends on your system.
+5. Run the userbot with docker.
 ```cmd
 docker start telecharm-bot
 ```
