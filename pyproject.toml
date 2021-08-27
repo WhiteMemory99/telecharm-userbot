@@ -4,6 +4,7 @@ version = "1.0.1"
 description = "Telegram userbot"
 authors = ["Daniil Kovalenko <lisen1510@gmail.com>"]
 license = "MIT"
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
