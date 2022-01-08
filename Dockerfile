@@ -1,18 +1,21 @@
-FROM python:3.9.6
+FROM python:3.10.1-slim-buster
 
-ENV PYTHONPATH "${PYTHONPATH}:/code"
-ENV PATH "/code:${PATH}"
+ENV PYTHONPATH "${PYTHONPATH}:/userbot"
+ENV PATH "/userbot:${PATH}"
 
-WORKDIR /code
+WORKDIR /userbot
 
-RUN pip install poetry
+RUN set +x \
+ && apt update \
+ && apt install -y curl gcc git \
+ && curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python - \
+ && cd /usr/local/bin \
+ && ln -s /opt/poetry/bin/poetry \
+ && poetry config virtualenvs.create false \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y python3-opencv && rm -rf /var/lib/apt/lists/*
+COPY . .
 
-COPY poetry.lock pyproject.toml /code/
-
-RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi -E opencv -E speedup
-
-COPY . /code/
+RUN poetry install --no-interaction --no-ansi --no-dev -E fast
 
 CMD ["python", "-m", "app"]

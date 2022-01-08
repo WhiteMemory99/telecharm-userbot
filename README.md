@@ -32,7 +32,7 @@ docker build -t telecharm-image .
 
 2. After building, start the userbot in interactive mode.
 ```cmd
-docker run -it -v pyrogram_sessions:/code/app/files --name telecharm-bot telecharm-image
+docker run -it -v pyrogram_files:/userbot/app/files --name telecharm telecharm-image
 ```
 
 3. Enter your number, auth code from Telegram and 2FA password, if you have one.
@@ -55,7 +55,7 @@ docker start telecharm-bot
 2. You can also install an optional **opencv-python** module to extend `.anime` functionality.
 
    ```cmd
-   poetry install -E opencv
+   poetry install -E anime
    ```
 
 3. Run the userbot with poetry.
