@@ -1,5 +1,6 @@
-import pyrogram
 from pathlib import Path
+
+import pyrogram
 
 from app.config import conf
 from app.utils.types import Client, Message
@@ -19,13 +20,12 @@ if __name__ == "__main__":
     this_dir = Path(__file__).parent
     (this_dir / "plugins" / "custom").mkdir(exist_ok=True)
     (this_dir / "files").mkdir(exist_ok=True)
-    session = pyrogram.client.FileStorage(
-        name=this_dir.parent.name,
-        workdir=this_dir / "files"
-    )
+
+    session = pyrogram.client.FileStorage(name=this_dir.parent.name, workdir=this_dir / "files")
 
     Client(
         session_name=session,
+        default_ttl=conf.default_ttl,
         api_id=conf.api_id,
         api_hash=conf.api_hash,
         plugins={"root": "app/plugins"},

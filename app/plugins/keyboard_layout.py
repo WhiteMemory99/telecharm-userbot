@@ -2,13 +2,18 @@ import asyncio
 
 from pyrogram import filters
 
-from app.config import conf
 from app.utils import Client, Message
 from app.utils.decorators import doc_args
 
 LAYOUTS = {
-    'ru': "ё1234567890-=Ё!\"№;%:?*()_+йцукенгшщзхъ\\ЙЦУКЕНГШЩЗХЪ/фывапролджэФЫВАПРОЛДЖЭячсмитьбю.ЯЧСМИТЬБЮ,",
-    'en': '`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\QWERTYUIOP{}|asdfghjkl;\'ASDFGHJKL:"zxcvbnm,./ZXCVBNM<>?',
+    "ru": (
+        'ё1234567890-=Ё!"№;%:?*()_+йцукенгшщзхъ\\'
+        "ЙЦУКЕНГШЩЗХЪ/фывапролджэФЫВАПРОЛДЖЭячсмитьбю.ЯЧСМИТЬБЮ,"
+    ),
+    "en": (
+        "`1234567890-=~!@#$%^&*()_+qwertyuiop[]\\"
+        "QWERTYUIOP{}|asdfghjkl;'ASDFGHJKL:\"zxcvbnm,./ZXCVBNM<>?"
+    ),
 }
 
 
@@ -29,11 +34,12 @@ async def change_keyboard_layout(text: str, from_layout: str, to_layout: str) ->
 async def layout_command(client: Client, message: Message):
     """
     Change the keyboard layout of a message. The language code is <b>optional</b>.
-    If the message is yours, it will be edited. If the message isn't yours, the new one will be sent.
+    If the message is yours, it will be edited.
+    If the message isn't yours, the new one will be sent.
     <b>Example of the command in action:</b> <code>Ghbdtn</code> >> <code>Привет</code>.
     """
     if not message.reply_to_message:
-        await message.edit_text("You must reply to a message to change its layout.", message_ttl=conf.default_ttl)
+        await message.edit_text("You must reply to a message to change its layout.")
 
     text = message.reply_to_message.text or message.reply_to_message.caption
     entities = message.reply_to_message.entities or message.reply_to_message.caption_entities
@@ -56,4 +62,4 @@ async def layout_command(client: Client, message: Message):
             message.delete(),
         )
     else:
-        await message.edit_text(changed_text, entities=entities, message_ttl=40)
+        await message.edit_text(changed_text, entities=entities, message_ttl=0)

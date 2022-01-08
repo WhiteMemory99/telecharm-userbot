@@ -12,9 +12,8 @@ from pyrogram.errors import (
 )
 from pyrogram.types import Chat, ChatPreview, User
 
-from app.config import conf
-from app.utils import quote_html, Client, Message
-from app.utils.decorators import doc_args, CHAT_IDENTIFIERS
+from app.utils import Client, Message, quote_html
+from app.utils.decorators import CHAT_IDENTIFIERS, doc_args
 
 STATUS = {
     True: "Yes",
@@ -35,7 +34,8 @@ DC_LOCATIONS = {
 async def resolve_command(client: Client, message: Message):
     """
     Get some information about a user, channel or group by specifying a proper identifier.
-    If the target is a private group or channel, the information you receive will be <b>limited</b>.
+    If the target is a private group or channel,
+    the information you receive will be <b>limited</b>.
     """
     info = None
     if entity := message.get_args(maximum=1):
@@ -46,16 +46,16 @@ async def resolve_command(client: Client, message: Message):
 
             info = get_entity_info(target)
         except (UsernameNotOccupied, UsernameInvalid):
-            await message.edit_text("Wrong <b>username</b> specified.", message_ttl=conf.default_ttl)
+            await message.edit_text("Wrong <b>username</b> specified.")
         except PeerIdInvalid:
-            await message.edit_text("Wrong <b>ID</b> specified.", message_ttl=conf.default_ttl)
+            await message.edit_text("Wrong <b>ID</b> specified.")
         except InviteHashInvalid:
-            await message.edit_text("Wrong <b>invitation link</b> specified.", message_ttl=conf.default_ttl)
+            await message.edit_text("Wrong <b>invitation link</b> specified.")
         except ChannelPrivate:
-            await message.edit_text("Specified target cannot be accessed.", message_ttl=conf.default_ttl)
+            await message.edit_text("Specified target cannot be accessed.")
         except RPCError as ex:
             logger.error(f"Could not resolve an entity due to {ex}")
-            await message.edit_text("Specified argument is invalid.", message_ttl=conf.default_ttl)
+            await message.edit_text("Specified argument is invalid.")
     else:
         if message.reply_to_message:  # It's a reply to another message
             if message.reply_to_message.from_user:
@@ -65,11 +65,11 @@ async def resolve_command(client: Client, message: Message):
                     info = get_entity_info(message.reply_to_message.forward_from_chat)
                 except KeyError:
                     await message.edit_text(
-                        f"Target <b>{message.reply_to_message.forward_from_chat.type}</b> cannot be accessed.",
-                        message_ttl=conf.default_ttl
+                        f"Target <b>{message.reply_to_message.forward_from_chat.type}</b> "
+                        f"cannot be accessed."
                     )
             else:
-                await message.edit_text("Unable to resolve this message.", message_ttl=conf.default_ttl)
+                await message.edit_text("Unable to resolve this message.")
         else:
             info = get_entity_info(message.from_user)
 
@@ -88,20 +88,28 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
         if entity.is_deleted:
             full_text = f"<b>{entity.first_name}</b>\n\nThis profile is deleted."
         else:
-            dc_name = f"{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}" if entity.dc_id else "Unavailable"
+            dc_name = (
+                f"{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}" if entity.dc_id else "Unavailable"
+            )
             full_text = (
-                f"<b>{entity.mention}</b>\n\n<b>ID</b>: <code>{entity.id}</code>\nType: <b>user</b>\nIs bot: <b>"
-                f"{STATUS[entity.is_bot]}</b>\nIs scam: <b>{STATUS[entity.is_scam]}</b>\nData center: <b>{dc_name}</b>"
+                f"<b>{entity.mention}</b>\n\n<b>ID</b>: "
+                f"<code>{entity.id}</code>\nType: <b>user</b>\nIs bot: <b>"
+                f"{STATUS[entity.is_bot]}</b>\nIs scam: "
+                f"<b>{STATUS[entity.is_scam]}</b>\nData center: <b>{dc_name}</b>"
             )
     elif isinstance(entity, ChatPreview):  # It's a private chat preview
         full_text = (
-            f"<b>{entity.title}</b>\n\nType: <b>{entity.type}</b>\nIs private: <b>Yes</b>\n"
-            f"Members count: <b>{entity.members_count}</b>\n\n<i>Join this {entity.type} to get more info.</i>"
+            f"<b>{entity.title}</b>\n\nType: "
+            f"<b>{entity.type}</b>\nIs private: <b>Yes</b>\n"
+            f"Members count: <b>{entity.members_count}</b>"
+            f"\n\n<i>Join this {entity.type} to get more info.</i>"
         )
     else:  # It's a Chat object
         dc_name = f"{entity.dc_id}-{DC_LOCATIONS[entity.dc_id]}" if entity.dc_id else "Unavailable"
         description = f"{quote_html(entity.description)}\n\n" if entity.description else ""
-        linked_chat = f"<code>{entity.linked_chat.id}</code>" if entity.linked_chat else "<b>None</b>"
+        linked_chat = (
+            f"<code>{entity.linked_chat.id}</code>" if entity.linked_chat else "<b>None</b>"
+        )
         is_private = not bool(entity.username)
 
         if entity.username:
@@ -110,7 +118,8 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
             title = quote_html(entity.title)
 
         full_text = (
-            f"<b>{title}</b>\n\n{description}<b>ID</b>: <code>{entity.id}</code>\nType: <b>{entity.type}</b>\n"
+            f"<b>{title}</b>\n\n{description}<b>ID</b>: "
+            f"<code>{entity.id}</code>\nType: <b>{entity.type}</b>\n"
             f"Linked chat: {linked_chat}\nIs private: <b>{STATUS[is_private]}</b>\n"
             f"Is scam: <b>{STATUS[entity.is_scam]}</b>\nData center: <b>{dc_name}</b>"
         )

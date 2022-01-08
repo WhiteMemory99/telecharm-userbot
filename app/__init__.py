@@ -1,4 +1,5 @@
 import platform
+
 import pyrogram
 
 
@@ -60,4 +61,4 @@ class SysInfo:
         return "\n".join(self.collect())
 
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"

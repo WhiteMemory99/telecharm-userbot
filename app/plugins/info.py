@@ -1,10 +1,10 @@
-import sys
 import inspect
+import sys
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
-from pydantic import BaseModel, validator
-from aiographfix import Telegraph
 
+from aiograph import Telegraph
+from pydantic import BaseModel, validator
 from pyrogram import filters
 from pyrogram.filters import Filter
 from pyrogram.handlers.handler import Handler
@@ -48,7 +48,9 @@ def get_command_filter(filter_obj: Filter):
     return None
 
 
-def get_eligible_data(handlers: List[Handler]) -> Tuple[Dict[str, List[HandlerData]], Dict[str, str]]:
+def get_eligible_data(
+    handlers: List[Handler],
+) -> Tuple[Dict[str, List[HandlerData]], Dict[str, str]]:
     """Filter handlers and modules that contain docs and are not excluded and return them."""
     eligible_handlers = defaultdict(list)
     module_descriptions = {}
@@ -64,9 +66,10 @@ def get_eligible_data(handlers: List[Handler]) -> Tuple[Dict[str, List[HandlerDa
         if result := get_command_filter(handler.filters):
             eligible_handlers[module_name].append(
                 HandlerData(
-                    commands=result.commands, custom_prefixes=result.prefixes,
+                    commands=result.commands,
+                    custom_prefixes=result.prefixes,
                     description=inspect.cleandoc(handler.callback.__doc__),
-                    supported_args=getattr(handler.callback, "documented_args", None)
+                    supported_args=getattr(handler.callback, "documented_args", None),
                 )
             )
 
@@ -77,13 +80,17 @@ def prepare_page_content(handlers: List[Handler]) -> str:
     """Prepare the Telegraph page content based on the data we receive from Pyrogram dispatcher."""
     modules, module_descriptions = get_eligible_data(handlers)
     text_blocks = [
-        f"<aside><p>Welcome to <b>Telecharm v{__version__}</b> - the mighty, speedy and cool Telegram userbot!\n"
+        f"<aside><p>Welcome to <b>Telecharm v{__version__}</b> - "
+        "the mighty, speedy and cool Telegram userbot!\n"
         "This page is created and updated automatically and individually, based on your plugins."
-        f"\nCurrent number of installed and documented modules: <b>{len(modules.keys())}</b>.</p></aside><hr />"
+        "\nCurrent number of installed and documented modules: "
+        f"<b>{len(modules.keys())}</b>.</p></aside><hr />"
     ]
     for key, value in modules.items():
         text_blocks.append(f"<h3>{key.replace('_', ' ').capitalize()} module</h3>")
-        if module_docs := module_descriptions.get(key):  # If module has __doc__, add it under the title
+        if module_docs := module_descriptions.get(
+            key
+        ):  # If module has __doc__, add it under the title
             text_blocks.append(f"<p>{module_docs}</p><br />")
 
         module_content = []
@@ -112,8 +119,9 @@ def prepare_page_content(handlers: List[Handler]) -> str:
         text_blocks.append("".join(module_content) + "<hr />")
 
     text_blocks.append(
-        f"<p><i>Keep track of Telecharm development progress on its <a href='{conf.github_url}'>GitHub</a> "
-        f"page, and thanks for choosing this userbot!</i></p>"
+        "<p><i>Keep track of Telecharm development "
+        f"progress on its <a href='{conf.github_url}'>GitHub</a> "
+        "page, and thanks for choosing this userbot!</i></p>"
     )
 
     return "".join(text_blocks)
@@ -124,10 +132,13 @@ def prepare_page_content(handlers: List[Handler]) -> str:
 async def help_command(client: Client, message: Message):  # TODO: Add last time updated?
     """
     This command lets you access and update this page.
-    Also, you can easily share telecharm this way, since it contains all the necessary info and links.
+    Also, you can easily share telecharm this way,
+    since it contains all the necessary info and links.
 
-    By default, this guide is updated when either Telecharm version or number of registered commands has changed.
-    To force an update, pass `<code>nocache</code>`. It might be useful when updating a single custom plugin.
+    By default, this guide is updated when either Telecharm version
+    or number of registered commands has changed.
+    To force an update, pass `<code>nocache</code>`.
+    It might be useful when updating a single custom plugin.
     """
     no_cache = "nocache" in message.get_args()
     help_url = client.user_settings.get("help_current_url")
@@ -139,7 +150,12 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
         all_handlers += group
 
     handlers_number = len(all_handlers)
-    if no_cache or not help_url or last_version != __version__ or last_handlers_number != handlers_number:
+    if (
+        no_cache
+        or not help_url
+        or last_version != __version__
+        or last_handlers_number != handlers_number
+    ):
         telegraph_token = client.user_settings.get("telegraph_access_token")
         telegraph = Telegraph(token=telegraph_token)
         if not telegraph_token:
@@ -165,11 +181,14 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
         f'\n\n<i><a href="{help_url}">Telecharm Guide</a>'
         f'\n<a href="{conf.github_url}">Telecharm on GitHub</a></i>',
         disable_web_page_preview=True,
-        message_ttl=30
+        message_ttl=30,
     )
 
 
 @Client.on_message(filters.me & filters.command("sys", prefixes="."))
 async def system_information(_, message: Message):
-    """Show some technical info about the current system, used libraries status and Telecharm components."""
+    """
+    Show some technical info about the current system,
+    used libraries` status, and Telecharm components.
+    """
     await message.edit_text(str(SysInfo()), message_ttl=15)

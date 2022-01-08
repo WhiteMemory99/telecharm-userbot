@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Union, Optional
+from typing import Any, Optional, Union
 
 try:
     import ujson as json
@@ -8,9 +8,7 @@ except ImportError:
 
 
 class JSONStorage:
-    """
-    JSON File storage to store user settings persistently.
-    """
+    """JSON File storage to store user settings persistently."""
 
     def __init__(self, path: Optional[str] = None):
         if path:

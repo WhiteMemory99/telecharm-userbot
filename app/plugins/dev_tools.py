@@ -6,8 +6,7 @@ from loguru import logger
 from pyrogram import filters
 from pyrogram.errors import FloodWait, RPCError
 
-from app.config import conf
-from app.utils import quote_html, Client, Message
+from app.utils import Client, Message, quote_html
 from app.utils.decorators import doc_args
 
 
@@ -16,19 +15,22 @@ from app.utils.decorators import doc_args
 async def flood_command(_, message: Message):
     """
     Send a specified number of messages consecutively. Only for development and testing purposes.
-    Using this command in malicious ways may lead to your profile loss, I'm not responsible for any damage caused.
+    Using this command in malicious ways may lead to your profile loss,
+    I'm not responsible for any damage caused.
     """
     args = message.get_args()
     if len(args) != 2 or not args[0].isdigit():  # Not enough arguments
         await message.edit_text(
-            "Pass the number of messages and the text that will be repeated.\n\n<code>.flood 3 we are victors!</code>",
-            message_ttl=conf.default_ttl
+            "Pass the number of messages and the text that will be repeated."
+            "\n\n<code>.flood 3 we are victors!</code>",
         )
     else:
         await message.delete()
         for _ in range(int(args[0])):
             try:
-                await message.reply_text(quote_html(args[1]), quote=False, disable_web_page_preview=True)
+                await message.reply_text(
+                    quote_html(args[1]), quote=False, disable_web_page_preview=True
+                )
             except FloodWait as ex:
                 logger.error(f"Sleeping for {ex.x} seconds in .flood")
                 await asyncio.sleep(ex.x)
@@ -57,7 +59,9 @@ async def get_buttons_data(_, message: Message):
                     else:
                         continue
 
-                    row_buttons.append(f"<i>{quote_html(button.text)}:</i> <code>{quote_html(data)}</code>")
+                    row_buttons.append(
+                        f"<i>{quote_html(button.text)}:</i> <code>{quote_html(data)}</code>"
+                    )
 
                 buttons = "\n".join(row_buttons)
                 row_lines.append(f"<b>Row {i + 1}:</b>\n{buttons}")
@@ -66,10 +70,11 @@ async def get_buttons_data(_, message: Message):
                 await message.edit_text("\n\n".join(row_lines), message_ttl=25)
             else:
                 await message.edit_text(
-                    "There is no any callback_data or url button inside this keyboard.", message_ttl=5
+                    "There is no any callback_data or url button inside this keyboard.",
+                    message_ttl=5,
                 )
     else:
         await message.edit_text(
             "Reply to a message containing inline keyboard to extract callback_data and urls.",
-            message_ttl=5
+            message_ttl=5,
         )

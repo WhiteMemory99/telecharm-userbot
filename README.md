@@ -118,16 +118,17 @@ from app.utils.decorators import doc_exclude, doc_args
 
 @Client.on_message(filters.me & filters.command("example", prefixes="."))
 @doc_args("arg_name", ("date", "time"))  # Let the Telecharm guide know about supported args (OPTIONAL)
-@doc_exclude  # This command will not appear in Telecharm guide, remove to check how the generation works :)
+@doc_exclude  # This command will not appear in Telecharm guide, remove this line to check how the generation works :)
 async def example_handler(client: Client, message: Message):
     """
     This text would appear in Telecharm guide along with the command if it wasn't excluded.
 
-    You can even wrap it like that, or style with supported HTML text like <b><i>THIS</b></i>.
+    You can even wrap it like that, or style with supported HTML texts like <b><i>THIS</b></i>.
     """
-    await message.edit_text("Hey, this is the example of a custom plugin command.", message_ttl=conf.default_ttl)
+    await message.edit_text("Hey, this is the example of a custom plugin command.", message_ttl=0)
     # message_ttl is used for message clean up feature, so be sure to take it seriously.
-    # For general and short replies use default_ttl provided in conf.
+    # For general and short replies you can leave it unfilled, so it will take the default TTL.
+    # To disable TTL, pass 0 as the argument.
 
     if client.user_settings.get("clean_up"):  # You can access and alter user settings with client.user_settings
         await asyncio.sleep(1)
@@ -137,7 +138,6 @@ async def example_handler(client: Client, message: Message):
 ```
 
 For more advanced usage, inspect my code and look at `app/utils`. <br />
-Also, be sure to respect others and learn asyncio before writing plugins, so you don't ruin the whole experience.
 
 </details>
 

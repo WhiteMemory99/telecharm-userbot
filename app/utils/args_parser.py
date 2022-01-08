@@ -6,8 +6,8 @@ from typing import Optional, Tuple, Union
 from pyrogram.errors import RPCError
 from pyrogram.types import User
 
-from app.utils.types import Message
 from app.utils.helper import extract_entity_text
+from app.utils.types import Message
 
 MODIFIERS = {
     "w": datetime.timedelta(weeks=1),
@@ -35,7 +35,9 @@ class CommandArgs:
 TIMEDELTA_PATTERN = re.compile(r"\b(?P<timedelta>\d+[smhdw])\b")
 
 
-async def parse_command(message: Message, with_time: bool = True) -> Optional[CommandArgs]:  # TODO: Reason support
+async def parse_command(
+    message: Message, with_time: bool = True
+) -> Optional[CommandArgs]:  # TODO: Reason support
     """
     Parse command arguments to extract user data, timedelta and other info.
 
@@ -52,11 +54,15 @@ async def parse_command(message: Message, with_time: bool = True) -> Optional[Co
 
     entities = message.entities or message.caption_entities
     if message.reply_to_message:
-        return await build_args(message, message.reply_to_message.from_user.id, timedelta, response_text)
+        return await build_args(
+            message, message.reply_to_message.from_user.id, timedelta, response_text
+        )
     elif entities:
         for entity in entities:  # Look for mentions or text mentions
             if entity.type == "mention":
-                username = extract_entity_text(message.text or message.caption, entity.offset, entity.length)
+                username = extract_entity_text(
+                    message.text or message.caption, entity.offset, entity.length
+                )
                 return await build_args(message, username, timedelta, response_text)
             elif entity.type == "text_mention":
                 return await build_args(message, entity.user.id, timedelta, response_text)

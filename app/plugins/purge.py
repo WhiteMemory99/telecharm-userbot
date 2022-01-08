@@ -14,11 +14,14 @@ async def purge_command(client: Client, message: Message):
     """
     Bulk delete of messages. Just reply to the oldest message you want to clear to.
     By default, deletes all the messages, unless used in a group without admin privileges.
-    You can also force this command to delete only your messages by providing `<code>me</code>` argument.
+    You can also force this command to delete only your messages
+    by providing `<code>me</code>` argument.
     """
     me_mode = "me" in message.get_args()
 
-    if message.chat.type in ("group", "supergroup") and not me_mode:  # Check admin rights if we delete all messages
+    if (
+        message.chat.type in ("group", "supergroup") and not me_mode
+    ):  # Check admin rights if we delete all messages
         member = await message.chat.get_member(message.from_user.id)
         if member.status != "creator" and not member.can_delete_messages:
             me_mode = True  # Not enough rights, so we'll delete our messages only
@@ -26,7 +29,7 @@ async def purge_command(client: Client, message: Message):
     message_list: List[int] = []
     try:
         async for history_message in client.iter_history(
-                message.chat.id, offset_id=message.reply_to_message.message_id, reverse=True
+            message.chat.id, offset_id=message.reply_to_message.message_id, reverse=True
         ):
             if me_mode and history_message.from_user.id != message.from_user.id:
                 continue  # Skip messages sent by others if me_mode is True

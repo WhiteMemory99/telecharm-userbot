@@ -1,25 +1,25 @@
-import httpx
 import asyncio
-from typing import BinaryIO, List, Optional, Union
+from typing import BinaryIO, Coroutine, List, Optional, Union
 
+from aiohttp import ClientSession
 from pyrogram import Client as PyrogramClient
 from pyrogram.errors import RPCError
-from pyrogram.types import (
-    Message as PyrogramMessage, MessageEntity, InlineKeyboardMarkup, ForceReply,
-    ReplyKeyboardMarkup, ReplyKeyboardRemove,
-)
+from pyrogram.types import ForceReply, InlineKeyboardMarkup
+from pyrogram.types import Message as PyrogramMessage
+from pyrogram.types import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 from app.storage.json_storage import JSONStorage
 
 
-class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings? Rework all message types
-    def __init__(self, *args, **kwargs):
+class Client(PyrogramClient):
+    def __init__(self, default_ttl: Union[int, float], *args, **kwargs) -> None:
         self.user_settings = JSONStorage()
-        self.http_client = httpx.AsyncClient(http2=True, timeout=15.0)
+        self.http_session = ClientSession(read_timeout=10.0)
+        self.default_ttl = default_ttl
         super().__init__(*args, **kwargs)
 
-    def stop(self, block: bool = True):
-        self.loop.run_until_complete(self.http_client.aclose())
+    def stop(self, block: bool = True) -> Coroutine:
+        self.loop.run_until_complete(self.http_session.close())
         return super().stop(block=block)
 
     async def clean_up(
@@ -41,8 +41,11 @@ class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings
         entities: List["MessageEntity"] = None,
         disable_web_page_preview: bool = None,
         reply_markup: "InlineKeyboardMarkup" = None,
-        message_ttl: Optional[Union[int, float]] = None
+        message_ttl: Optional[Union[int, float]] = None,
     ) -> "Message":
+        if message_ttl is None:
+            message_ttl = self.default_ttl
+
         if message_ttl:
             asyncio.create_task(self.clean_up(chat_id, message_id, message_ttl))
 
@@ -68,20 +71,35 @@ class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings
         reply_to_message_id: int = None,
         schedule_date: int = None,
         reply_markup: Union[
-            "InlineKeyboardMarkup",
-            "ReplyKeyboardMarkup",
-            "ReplyKeyboardRemove",
-            "ForceReply"
+            "InlineKeyboardMarkup", "ReplyKeyboardMarkup", "ReplyKeyboardRemove", "ForceReply"
         ] = None,
         progress: callable = None,
         progress_args: tuple = (),
-        message_ttl: Optional[Union[int, float]] = None
+        message_ttl: Optional[Union[int, float]] = None,
     ) -> Optional["Message"]:
         sent_message = await super().send_video(
-            chat_id, video, caption, parse_mode, caption_entities, ttl_seconds, duration, width, height, thumb,
-            file_name, supports_streaming, disable_notification, reply_to_message_id, schedule_date, reply_markup,
-            progress, progress_args
+            chat_id,
+            video,
+            caption,
+            parse_mode,
+            caption_entities,
+            ttl_seconds,
+            duration,
+            width,
+            height,
+            thumb,
+            file_name,
+            supports_streaming,
+            disable_notification,
+            reply_to_message_id,
+            schedule_date,
+            reply_markup,
+            progress,
+            progress_args,
         )
+
+        if message_ttl is None:
+            message_ttl = self.default_ttl
 
         if message_ttl:
             asyncio.create_task(self.clean_up(chat_id, sent_message.message_id, message_ttl))
@@ -99,17 +117,24 @@ class Client(PyrogramClient):  # TODO: Make message TTL configurable in settings
         reply_to_message_id: int = None,
         schedule_date: int = None,
         reply_markup: Union[
-            "InlineKeyboardMarkup",
-            "ReplyKeyboardMarkup",
-            "ReplyKeyboardRemove",
-            "ForceReply"
+            "InlineKeyboardMarkup", "ReplyKeyboardMarkup", "ReplyKeyboardRemove", "ForceReply"
         ] = None,
-        message_ttl: Optional[Union[int, float]] = None
+        message_ttl: Optional[Union[int, float]] = None,
     ) -> "Message":
         sent_message = await super().send_message(
-            chat_id, text, parse_mode, entities, disable_web_page_preview, disable_notification, reply_to_message_id,
-            schedule_date, reply_markup
+            chat_id,
+            text,
+            parse_mode,
+            entities,
+            disable_web_page_preview,
+            disable_notification,
+            reply_to_message_id,
+            schedule_date,
+            reply_markup,
         )
+
+        if message_ttl is None:
+            message_ttl = self.default_ttl
 
         if message_ttl:
             asyncio.create_task(self.clean_up(chat_id, sent_message.message_id, message_ttl))
@@ -127,7 +152,7 @@ class Message(PyrogramMessage):
         entities: List["MessageEntity"] = None,
         disable_web_page_preview: bool = None,
         reply_markup: "InlineKeyboardMarkup" = None,
-        message_ttl: Optional[Union[int, float]] = None
+        message_ttl: Optional[Union[int, float]] = None,
     ) -> "Message":
         return await self._client.edit_message_text(
             chat_id=self.chat.id,
@@ -137,7 +162,7 @@ class Message(PyrogramMessage):
             entities=entities,
             disable_web_page_preview=disable_web_page_preview,
             reply_markup=reply_markup,
-            message_ttl=message_ttl
+            message_ttl=message_ttl,
         )
 
     async def reply_text(
@@ -150,7 +175,7 @@ class Message(PyrogramMessage):
         disable_notification: bool = None,
         reply_to_message_id: int = None,
         reply_markup=None,
-        message_ttl: Optional[Union[int, float]] = None
+        message_ttl: Optional[Union[int, float]] = None,
     ) -> "Message":
         if quote is None:
             quote = self.chat.type != "private"
@@ -167,7 +192,7 @@ class Message(PyrogramMessage):
             disable_notification=disable_notification,
             reply_to_message_id=reply_to_message_id,
             reply_markup=reply_markup,
-            message_ttl=message_ttl
+            message_ttl=message_ttl,
         )
 
     def get_args(self, maximum: int = -1) -> List[str]:

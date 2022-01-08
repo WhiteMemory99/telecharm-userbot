@@ -1,16 +1,15 @@
 import os
 import tempfile
 from decimal import Decimal
+from http.client import responses
 from typing import List, Optional
 
-import httpx
+from aiohttp import ClientResponseError, ServerTimeoutError
 from pydantic import BaseModel, Field, ValidationError, validator
-
 from pyrogram import filters
 from pyrogram.types import Animation, Document, Video
 
-from app.config import conf
-from app.utils import quote_html, Client, Message
+from app.utils import Client, Message, quote_html
 
 try:
     import cv2
@@ -65,7 +64,9 @@ class AnimeResult(BaseModel):
     def title_block(self) -> str:
         romaji_text = f"<b>Japanese title:</b> <code>{self.anilist.title.romaji}</code>"
         if self.anilist.title.english:
-            text = romaji_text + f"\n<b>English title:</b> <code>{self.anilist.title.english}</code>"
+            text = (
+                romaji_text + f"\n<b>English title:</b> <code>{self.anilist.title.english}</code>"
+            )
         else:
             text = romaji_text
 
@@ -94,7 +95,8 @@ class AnimeResult(BaseModel):
         myanimelist_url = f"https://myanimelist.net/anime/{self.anilist.mal_id}"
 
         return (
-            f'<b><a href="{myanimelist_url}">Track on MyAnimeList</a>\n<a href="{anilist_url}">Track on Anilist</a></b>'
+            f'<b><a href="{myanimelist_url}">Track on MyAnimeList</a>\n'
+            f'<a href="{anilist_url}">Track on Anilist</a></b>'
         )
 
     def format_to_text(self) -> str:
@@ -116,7 +118,8 @@ class AnimeResult(BaseModel):
 
         is_nsfw = "Yes" if self.anilist.is_adult else "No"
         return (
-            f"{self.title_block}\n\nNSFW: <b>{is_nsfw}</b>\nAccuracy is <b>{self.accuracy_status}</b> - "
+            f"{self.title_block}\n\nNSFW: <b>{is_nsfw}</b>\n"
+            f"Accuracy is <b>{self.accuracy_status}</b> - "
             f"{self.similarity}%{episode_text}\n\n{self.tracking_links_block}"
         )
 
@@ -134,46 +137,58 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
 
     if media is None or (isinstance(media, Document) and "image" not in media.mime_type):
         await message.edit_text(
-            "A photo, video, GIF or <b>image</b> document is required.", message_ttl=conf.default_ttl
+            "A photo, video, GIF or <b>image</b> document is required.",
         )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
             await message.edit_text("<i>Processing...</i>")
-            file_path = await client.download_media(target_msg, file_name=os.path.join(tempdir, media.file_id))
+            file_path = await client.download_media(
+                target_msg, file_name=os.path.join(tempdir, media.file_id)
+            )
             if isinstance(media, (Animation, Video)):
                 if cv2 is not None:
                     file_path = get_video_frame(file_path)
                 else:
                     return await message.edit_text(
-                        "This media type requires <code>opencv-python</code>.", message_ttl=conf.default_ttl
+                        "This media type requires <code>opencv-python</code>.",
                     )
 
             try:
-                response = await client.http_client.post(
-                    "https://api.trace.moe/search?cutBorders&anilistInfo", files={"image": open(file_path, "rb")}
-                )
-                response.raise_for_status()
-                parsed_result = AnimeResult.parse_obj(response.json()["result"][0])
+                async with await client.http_session.post(
+                    "https://api.trace.moe/search?cutBorders&anilistInfo",
+                    data={"file": open(file_path, "rb")},
+                ) as resp:
+                    resp.raise_for_status()
+                    resp_json = await resp.json()
+                    parsed_result = AnimeResult.parse_obj(resp_json["result"][0])
+
+                if message.reply_to_message:
+                    reply_to_id = message.reply_to_message.message_id
+                else:
+                    reply_to_id = None
+
                 await client.send_video(
                     message.chat.id,
                     parsed_result.big_video_link,
                     caption=parsed_result.format_to_text(),
-                    reply_to_message_id=message.reply_to_message.message_id if message.reply_to_message else None,
-                    message_ttl=30
+                    reply_to_message_id=reply_to_id,
+                    message_ttl=30,
                 )
                 await message.delete()
-            except httpx.ReadTimeout:
+            except ServerTimeoutError:
                 await message.edit_text(
-                    "Failed to get info about this anime:\n<code>Read Timeout</code>", message_ttl=conf.default_ttl
+                    "Failed to get info about this anime:\n<code>Read Timeout</code>",
                 )
-            except httpx.HTTPStatusError as ex:
-                description = httpx.codes.get_reason_phrase(ex.response.status_code)
+            except ClientResponseError as ex:
+                description = responses.get(ex.status)
                 await message.edit_text(
-                    f"Failed to get info about this anime:\n<code>{description}</code>", message_ttl=conf.default_ttl
+                    f"Failed to get info about this anime:\n<code>{description}</code>",
                 )
             except ValidationError:
                 await message.edit_text(
-                    "Seems that the API has changed.\nPlease, update Telecharm or wait for new versions.", message_ttl=5
+                    "Seems that the API has changed.\n"
+                    "Please, update Telecharm or wait for new versions.",
+                    message_ttl=5,
                 )
 
 
@@ -186,8 +201,8 @@ def get_video_frame(file_path: str) -> str:
     """
     new_path = f"{file_path}.jpg"
 
-    video = cv2.VideoCapture(file_path)
+    video = cv2.VideoCapture(file_path)  # noqa
     _, image = video.read()
-    cv2.imwrite(new_path, image)
+    cv2.imwrite(new_path, image)  # noqa
 
     return new_path
