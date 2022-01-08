@@ -88,9 +88,9 @@ def prepare_page_content(handlers: List[Handler]) -> str:
     ]
     for key, value in modules.items():
         text_blocks.append(f"<h3>{key.replace('_', ' ').capitalize()} module</h3>")
-        if module_docs := module_descriptions.get(
-            key
-        ):  # If module has __doc__, add it under the title
+
+        # If module has __doc__, add it under the title
+        if module_docs := module_descriptions.get(key):
             text_blocks.append(f"<p>{module_docs}</p><br />")
 
         module_content = []
