@@ -1,21 +1,21 @@
-FROM python:3.10.1-slim-buster
+FROM python:3.10.1-slim as requirements-stage
 
-ENV PYTHONPATH "${PYTHONPATH}:/userbot"
-ENV PATH "/userbot:${PATH}"
+WORKDIR /tmp
+
+RUN pip install poetry
+
+COPY ./pyproject.toml ./poetry.lock* /tmp/
+
+RUN poetry export --output requirements.txt --without-hashes --extras fast
+
+FROM python:3.10.1-slim
 
 WORKDIR /userbot
 
-RUN set +x \
- && apt update \
- && apt install -y curl gcc git \
- && curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python - \
- && cd /usr/local/bin \
- && ln -s /opt/poetry/bin/poetry \
- && poetry config virtualenvs.create false \
- && rm -rf /var/lib/apt/lists/*
+COPY --from=requirements-stage /tmp/requirements.txt ./requirements.txt
+
+RUN pip install --no-cache-dir --upgrade -r /userbot/requirements.txt
 
 COPY . .
-
-RUN poetry install --no-interaction --no-ansi --no-dev -E fast
 
 CMD ["python", "-m", "app"]
