@@ -38,7 +38,6 @@ profile = "black"
 line_length = 99
 known_third_party = [
     "pyrogram",
-    "httpx",
     "loguru",
     "aiograph",
     "aiohttp",
