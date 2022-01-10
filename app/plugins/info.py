@@ -3,7 +3,7 @@ import sys
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
-from aiograph import Telegraph
+from aiographfix import Telegraph
 from pydantic import BaseModel, validator
 from pyrogram import filters
 from pyrogram.filters import Filter

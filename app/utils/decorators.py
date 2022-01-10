@@ -10,7 +10,8 @@ def doc_args(*args: Union[str, tuple]) -> callable:
     Provide arguments for a command handler,
     they will appear in auto-generated Telecharm guide.
 
-    This decorator supports multiple args, each one is treated as a different argument in the guide.
+    This decorator supports multiple args,
+    each one is treated as a different argument in the guide.
     """
 
     def decorate_handler(func: Callable) -> Callable:

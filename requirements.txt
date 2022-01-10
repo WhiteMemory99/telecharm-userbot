@@ -1,4 +1,4 @@
-aiograph @ git+https://github.com/aiogram/aiograph.git@master
+aiographfix==0.2.2
 aiohttp==3.8.1; python_version >= "3.6"
 aiosignal==1.2.0; python_version >= "3.6"
 async-timeout==4.0.2; python_version >= "3.6"

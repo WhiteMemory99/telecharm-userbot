@@ -25,5 +25,5 @@ def extract_entity_text(text: str, offset: int, length: int) -> str:
         return text[offset : offset + length]  # noqa
 
     entity_text = text.encode("utf-16-le")
-    entity_text = entity_text[offset * 2 : (offset + length) * 2]
+    entity_text = entity_text[offset * 2 : (offset + length) * 2]  # noqa
     return entity_text.decode("utf-16-le")

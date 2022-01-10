@@ -48,7 +48,7 @@ async def execute_python(client: Client, message: Message):
             text = "<b>Input:</b>\n<pre>{}</pre>\n\n<b>{}:</b>\n<pre>{}</pre>".format(
                 quote_html(args[0]), result_type, quote_html(output)
             )
-        except Exception:
+        except Exception:  # noqa
             etype, evalue, _ = sys.exc_info()
             text = "<b>Input:</b>\n<pre>{}</pre>\n\n<b>Error log:</b>\n<pre>{}</pre>".format(
                 quote_html(args[0]),
