@@ -20,6 +20,8 @@ state, so feel free to contribute.
 2. Visit <https://my.telegram.org/apps> to get your own `api_id` and `api_hash`.
 3. Rename `.env.dist` to `.env` and open it.
 4. Edit `.env` file: fill in your `api_id`, `api_hash`.
+5. **(Optional)** Visit [SauceNao](https://saucenao.com/user.php), log in and copy your API key to `saucenao_key`.  
+This is a must if you want to use the `.sauce` command.
 
 ### Docker deployment
 
