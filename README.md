@@ -25,14 +25,19 @@ state, so feel free to contribute.
 
 **Make sure you have _[docker](https://docs.docker.com/get-docker/)_**.
 
-1. Build the image.
+1. Build the image. Choose one of the two options below.
+- Basic image for everyone (**~210 MB**)
 ```cmd
 docker build -t telecharm-image .
+```
+- Extended image with complete `.anime` capabilities (**~1.1 GB**)
+```cmd
+docker build -t telecharm-image -f Dockerfile.full .
 ```
 
 2. After building, start the userbot in interactive mode.
 ```cmd
-docker run -it -v pyrogram_files:/userbot/app/files --name telecharm telecharm-image
+docker run -it -v userbot_data:/userbot/app/files --name telecharm telecharm-image
 ```
 
 3. Enter your number, auth code from Telegram and 2FA password, if you have one.
