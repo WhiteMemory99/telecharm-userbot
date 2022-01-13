@@ -53,7 +53,7 @@ docker run -it -v userbot_data:/userbot/app/files --name telecharm telecharm-ima
 5. Run the userbot with docker.
 
 ```cmd
-docker start telecharm-bot
+docker start telecharm
 ```
 
 ### Poetry deployment
