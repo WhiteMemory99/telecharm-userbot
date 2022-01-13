@@ -141,7 +141,7 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
         )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
-            await message.edit_text("<i>Processing...</i>")
+            await message.edit_text("<i>Processing...</i>", message_ttl=0)
             file_path = await client.download_media(
                 target_msg, file_name=os.path.join(tempdir, media.file_id)
             )
@@ -172,7 +172,7 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
                     parsed_result.big_video_link,
                     caption=parsed_result.format_to_text(),
                     reply_to_message_id=reply_to_id,
-                    message_ttl=30,
+                    message_ttl=35,
                 )
                 await message.delete()
             except ServerTimeoutError:

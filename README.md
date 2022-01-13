@@ -25,7 +25,7 @@ state, so feel free to contribute.
 
 **Make sure you have _[docker](https://docs.docker.com/get-docker/)_**.
 
-1. Build the image. Choose one of the two options below.
+1. Build the image. Choose **one** of the two options below.
 - Basic image for everyone (**~210 MB**)
 ```cmd
 docker build -t telecharm-image .

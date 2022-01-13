@@ -7,14 +7,18 @@ from pyrogram.errors import RPCError
 from pyrogram.types import ForceReply, InlineKeyboardMarkup
 from pyrogram.types import Message as PyrogramMessage
 from pyrogram.types import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from saucenaopie import AsyncSauceNao
 
 from app.storage.json_storage import JSONStorage
 
 
 class Client(PyrogramClient):
-    def __init__(self, default_ttl: Union[int, float], *args, **kwargs) -> None:
+    def __init__(
+        self, saucenao: Optional[AsyncSauceNao], default_ttl: Union[int, float], *args, **kwargs
+    ) -> None:
         self.user_settings = JSONStorage()
         self.http_session = ClientSession(read_timeout=10.0)
+        self.saucenao = saucenao
         self.default_ttl = default_ttl
         super().__init__(*args, **kwargs)
 

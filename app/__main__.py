@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pyrogram
+from saucenaopie import AsyncSauceNao
 
 from app.config import conf
 from app.utils.types import Client, Message
@@ -25,6 +26,7 @@ if __name__ == "__main__":
 
     Client(
         session_name=session,
+        saucenao=AsyncSauceNao(conf.saucenao_key) if conf.saucenao_key else None,
         default_ttl=conf.default_ttl,
         api_id=conf.api_id,
         api_hash=conf.api_hash,
