@@ -1,4 +1,4 @@
-FROM python:3.10.1-slim as requirements-stage
+FROM python:3.10.2-slim as requirements-stage
 
 WORKDIR /tmp
 
@@ -8,7 +8,7 @@ COPY ./pyproject.toml ./poetry.lock* /tmp/
 
 RUN poetry export --output requirements.txt --without-hashes --extras fast
 
-FROM python:3.10.1-slim
+FROM python:3.10.2-slim
 
 WORKDIR /userbot
 
