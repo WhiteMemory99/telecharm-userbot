@@ -81,12 +81,12 @@ async def find_sauce(client: Client, message: Message):
         return
 
     results = sauce.get_likely_results()
-    if results:
-        formatted_links = [
-            f'{i + 1}. <a href="{r.data.first_url}">{r.index}</a> - {r.similarity:.1f}%'
-            for i, r in enumerate(results)
-            if r.data.first_url
-        ]
+    formatted_links = [
+        f'{i + 1}. <a href="{r.data.first_url}">{r.index}</a> - {r.similarity:.1f}%'
+        for i, r in enumerate(results)
+        if r.data.first_url
+    ]
+    if formatted_links:
         await message.edit_text(
             "Here's this picture <b>sauces</b>:\n\n" + "\n".join(formatted_links),
             message_ttl=35,
