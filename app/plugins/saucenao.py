@@ -88,7 +88,7 @@ async def find_sauce(client: Client, message: Message):
     ]
     if formatted_links:
         await message.edit_text(
-            "Here's this picture <b>sauces</b>:\n\n" + "\n".join(formatted_links),
+            "Here are this picture's <b>sauces</b>:\n\n" + "\n".join(formatted_links),
             message_ttl=35,
         )
     else:

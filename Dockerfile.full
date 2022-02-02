@@ -16,7 +16,7 @@ COPY --from=requirements-stage /tmp/requirements.txt ./requirements.txt
 
 RUN apt update \
     && apt install -y python3-opencv \
-    && pip install --no-cache-dir --upgrade -r /userbot/requirements.txt \
+    && pip install --no-cache-dir --upgrade -r ./requirements.txt \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
