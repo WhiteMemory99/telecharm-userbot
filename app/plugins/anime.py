@@ -140,7 +140,7 @@ async def find_anime(client: Client, message: Message) -> Any:
 
     if media is None or (
         isinstance(media, Document)
-        and not all(mime_type in media.mime_type for mime_type in ALLOWED_MIME_TYPES)
+        and not any(mime_type in media.mime_type for mime_type in ALLOWED_MIME_TYPES)
     ):
         await message.edit_text(
             "A photo, video, GIF or <b>image/video</b> document is required.",
