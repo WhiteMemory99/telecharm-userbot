@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 try:
     import ujson as json
@@ -7,15 +7,11 @@ except ImportError:
     import json
 
 
-class JSONStorage:
+class UserSettings:
     """JSON File storage to store user settings persistently."""
 
-    def __init__(self, path: Optional[str] = None):
-        if path:
-            self.path = Path(path)
-        else:
-            self.path = Path(__file__).parent.parent / "files" / "user_settings.json"
-
+    def __init__(self, path: Path):
+        self.path = path
         try:
             self.data: dict = self.read()
         except FileNotFoundError:

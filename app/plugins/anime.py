@@ -2,19 +2,22 @@ import os
 import tempfile
 from decimal import Decimal
 from http.client import responses
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from aiohttp import ClientResponseError, ServerTimeoutError
+from aiohttp import ClientResponseError, ClientSession, ServerTimeoutError
 from pydantic import BaseModel, Field, ValidationError, validator
-from pyrogram import filters
-from pyrogram.types import Animation, Document, Video
+from pyrogram import Client, filters
+from pyrogram.types import Animation, Document, Message, Video
 
-from app.utils import Client, Message, quote_html
+from app.utils import quote_html
 
 try:
     import cv2
 except ImportError:
     cv2 = None
+
+
+ALLOWED_MIME_TYPES = ("image", "video")
 
 
 class AnimeTitle(BaseModel):
@@ -125,7 +128,7 @@ class AnimeResult(BaseModel):
 
 
 @Client.on_message(filters.me & filters.command(["anime", "whatanime"], prefixes="."))
-async def find_anime(client: Client, message: Message):  # TODO: Support video document?
+async def find_anime(client: Client, message: Message) -> Any:
     """
     Find anime source by replying to a photo, <b>image</b> document, GIF or video.
     If successful, you will receive basic info about the found anime.
@@ -135,13 +138,16 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
     target_msg = message.reply_to_message if message.reply_to_message else message
     media = target_msg.photo or target_msg.video or target_msg.animation or target_msg.document
 
-    if media is None or (isinstance(media, Document) and "image" not in media.mime_type):
+    if media is None or (
+        isinstance(media, Document)
+        and not all(mime_type in media.mime_type for mime_type in ALLOWED_MIME_TYPES)
+    ):
         await message.edit_text(
-            "A photo, video, GIF or <b>image</b> document is required.",
+            "A photo, video, GIF or <b>image/video</b> document is required.",
         )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
-            await message.edit_text("<i>Processing...</i>", message_ttl=0)
+            await message.edit_text("<i>Processing...</i>")
             file_path = await client.download_media(
                 target_msg, file_name=os.path.join(tempdir, media.file_id)
             )
@@ -153,8 +159,9 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
                         "This media type requires <code>opencv-python</code>.",
                     )
 
+            session: ClientSession = getattr(client, "http_session")
             try:
-                async with await client.http_session.post(
+                async with await session.post(
                     "https://api.trace.moe/search?cutBorders&anilistInfo",
                     data={"file": open(file_path, "rb")},
                 ) as resp:
@@ -162,17 +169,12 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
                     resp_json = await resp.json()
                     parsed_result = AnimeResult.parse_obj(resp_json["result"][0])
 
-                if message.reply_to_message:
-                    reply_to_id = message.reply_to_message.message_id
-                else:
-                    reply_to_id = None
-
+                reply_to_id = message.reply_to_message.id if message.reply_to_message else None
                 await client.send_video(
                     message.chat.id,
                     parsed_result.big_video_link,
                     caption=parsed_result.format_to_text(),
                     reply_to_message_id=reply_to_id,
-                    message_ttl=35,
                 )
                 await message.delete()
             except ServerTimeoutError:
@@ -188,7 +190,6 @@ async def find_anime(client: Client, message: Message):  # TODO: Support video d
                 await message.edit_text(
                     "Seems that the API has changed.\n"
                     "Please, update Telecharm or wait for new versions.",
-                    message_ttl=5,
                 )
 
 

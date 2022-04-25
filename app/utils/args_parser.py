@@ -4,10 +4,9 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
 from pyrogram.errors import RPCError
-from pyrogram.types import User
+from pyrogram.types import Message, User
 
 from app.utils.helper import extract_entity_text
-from app.utils.types import Message
 
 MODIFIERS = {
     "w": datetime.timedelta(weeks=1),
@@ -23,7 +22,7 @@ MODIFIER_NAMES = {"w": "week", "d": "day", "h": "hour", "m": "minute", "s": "sec
 @dataclass
 class CommandArgs:
     user: User
-    until_date: int
+    until_date: datetime.datetime
     text: str
     is_self: bool = False
     is_admin: bool = False
@@ -67,7 +66,7 @@ async def parse_command(
             elif entity.type == "text_mention":
                 return await build_args(message, entity.user.id, timedelta, response_text)
 
-    for item in message.get_args()[:5]:  # Look for IDs in the args
+    for item in message.command[1:5]:  # Look for IDs in the args
         try:
             return await build_args(message, int(item), timedelta, response_text)
         except ValueError:
@@ -92,7 +91,7 @@ async def build_args(
         member = await message.chat.get_member(user_id)
         return CommandArgs(
             user=member.user,
-            until_date=int((datetime.datetime.now() + duration).timestamp()),
+            until_date=datetime.datetime.now() + duration,
             text=text,
             is_self=member.user.id == message.from_user.id,
             is_admin=member.status in ("administrator", "creator"),

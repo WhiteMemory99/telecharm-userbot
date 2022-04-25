@@ -1,14 +1,14 @@
 import os
 import tempfile
-from typing import List, Optional
+from typing import Any, List, Optional
 
-from pyrogram import filters
-from pyrogram.types import Document, MessageEntity
+from pyrogram import Client, filters
+from pyrogram.types import Document, Message, MessageEntity
 from saucenaopie import AsyncSauceNao
 from saucenaopie.exceptions import ImageInvalid, LongLimitReached, SauceNaoError, ShortLimitReached
 from saucenaopie.types.response import SauceResponse
 
-from app.utils import Client, Message, extract_entity_text
+from app.utils import extract_entity_text
 
 
 def get_first_url(entities: List[MessageEntity], text: str) -> Optional[str]:
@@ -43,14 +43,15 @@ async def search_saucenao(
 
 
 @Client.on_message(filters.me & filters.command(["sauce", "saucenao"], prefixes="."))
-async def find_sauce(client: Client, message: Message):
+async def find_sauce(client: Client, message: Message) -> Any:
     """
     Find an art or picture source by replying to a photo, <b>image</b> document, or message with a
     direct URL to the picture. Note, that only the first URL in the message is being checked.
 
     If successful, you will receive a list of potential sources for the image.
     """
-    if client.saucenao is None:
+    saucenao = getattr(client, "saucenao", None)
+    if saucenao is None:
         return await message.edit_text(
             "You must add your <b>SauceNao API</b> key to the <code>.env</code> "
             "file and restart Telecharm in order to use this command."
@@ -63,19 +64,18 @@ async def find_sauce(client: Client, message: Message):
         entities = target_msg.entities or target_msg.caption_entities
         url = get_first_url(entities, target_msg.text or target_msg.caption)
         if url:
-            sauce = await search_saucenao(client.saucenao, message, url, from_url=True)
+            sauce = await search_saucenao(saucenao, message, url, from_url=True)
         else:
             return await message.edit_text(
-                "A photo, <b>image</b> document, or message with a valid direct URL is required.",
-                message_ttl=5,
+                "A photo, <b>image</b> document, or message with a valid direct URL is required."
             )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
-            await message.edit_text("<i>Processing...</i>", message_ttl=0)
+            await message.edit_text("<i>Processing...</i>")
             file_path = await client.download_media(
                 target_msg, file_name=os.path.join(tempdir, media.file_id)
             )
-            sauce = await search_saucenao(client.saucenao, message, file_path)
+            sauce = await search_saucenao(saucenao, message, file_path)
 
     if not sauce:
         return
@@ -88,8 +88,7 @@ async def find_sauce(client: Client, message: Message):
     ]
     if formatted_links:
         await message.edit_text(
-            "Here are this picture's <b>sauces</b>:\n\n" + "\n".join(formatted_links),
-            message_ttl=35,
+            "Here are this picture's <b>sauces</b>:\n\n" + "\n".join(formatted_links)
         )
     else:
         await message.edit_text("Couldn't find any valid sources of this picture.")

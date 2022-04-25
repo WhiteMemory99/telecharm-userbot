@@ -119,36 +119,25 @@ Thanks for using **Telecharm** :)
 
 ```python
 """
-app/plugins/custom/example.py
+app/plugins/custom/echo.py
 This text would also appear in Telecharm guide as a module description.
 """
-import asyncio
-from pyrogram import filters
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
-from app.config import conf
-from app.utils import Client, Message  # Use custom types for type-hinting
 from app.utils.decorators import doc_exclude, doc_args
 
 
-@Client.on_message(filters.me & filters.command("example", prefixes="."))
-@doc_args("arg_name", ("date", "time"))  # Let the Telecharm guide know about supported args (OPTIONAL)
+@Client.on_message(filters.me & filters.command("echo", prefixes="."))
+@doc_args("text")  # Let the Telecharm guide know about the supported args (OPTIONAL)
 @doc_exclude  # This command will not appear in Telecharm guide, remove this line to check how the generation works :)
-async def example_handler(client: Client, message: Message):
+async def echo_handler(client: Client, message: Message):
     """
     This text would appear in Telecharm guide along with the command if it wasn't excluded.
 
     You can even wrap it like that, or style with supported HTML texts like <b><i>THIS</b></i>.
     """
-    await message.edit_text("Hey, this is the example of a custom plugin command.", message_ttl=0)
-    # message_ttl is used for message clean up feature, so be sure to take it seriously.
-    # For general and short replies you can leave it unfilled, so it will take the default TTL.
-    # To disable TTL, pass 0 as the argument.
-
-    if client.user_settings.get("clean_up"):  # You can access and alter user settings with client.user_settings
-        await asyncio.sleep(1)
-        await message.reply_text(
-            "By the way, the clean up mode is on! So this message will disappear in 6 seconds.", message_ttl=6
-        )
+    await message.edit_text(message.text, entities=message.entities)
 ```
 
 For more advanced usage, inspect my code and look at `app/utils`. <br />

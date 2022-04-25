@@ -2,18 +2,16 @@ import asyncio
 from typing import List, Optional
 
 from aiohttp import ClientSession
-from pyrogram import filters
-from pyrogram.types import MessageEntity
+from pyrogram import Client, filters
+from pyrogram.types import Message, MessageEntity
 
-from app.utils import Client, Message, extract_entity_text
+from app.utils import extract_entity_text
 from app.utils.decorators import doc_args
 
 
 @Client.on_message(filters.me & filters.command(["short", "clck"], prefixes="."))
 @doc_args("links")
-async def shorten_url(
-    client: Client, message: Message
-):  # TODO: Remove the limit and wrap the message
+async def shorten_url(client: Client, message: Message) -> None:
     """
     Shorten URLs contained in outgoing <b>and/or</b> replied message.
     This command takes up to a hundred links at once, and uses <b>clck.ru</b> developed by Yandex
@@ -31,14 +29,12 @@ async def shorten_url(
             )
 
     if urls:
-        responses = await asyncio.gather(
-            *[send_link_request(client.http_session, url) for url in urls[:100]]
-        )
+        session = getattr(client, "http_session")
+        responses = await asyncio.gather(*[send_link_request(session, url) for url in urls[:100]])
 
         await message.edit_text(
             "\n".join(f"<b>-</b> {short_link}" for short_link in responses if short_link),
             disable_web_page_preview=True,
-            message_ttl=0,
         )
     else:
         await message.edit_text(

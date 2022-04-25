@@ -5,13 +5,13 @@ from typing import Dict, List, Optional, Tuple
 
 from aiographfix import Telegraph
 from pydantic import BaseModel, validator
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.filters import Filter
 from pyrogram.handlers.handler import Handler
+from pyrogram.types import Message
 
 from app import SysInfo, __version__
 from app.config import conf
-from app.utils import Client, Message
 from app.utils.decorators import doc_args
 
 
@@ -129,7 +129,7 @@ def prepare_page_content(handlers: List[Handler]) -> str:
 
 @Client.on_message(filters.me & filters.command(["help", "share"], prefixes="."))
 @doc_args("nocache")
-async def help_command(client: Client, message: Message):  # TODO: Add last time updated?
+async def help_command(client: Client, message: Message) -> None:  # TODO: Add last time updated?
     """
     This command lets you access and update this page.
     Also, you can easily share telecharm this way,
@@ -140,10 +140,11 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
     To force an update, pass `<code>nocache</code>`.
     It might be useful when updating a single custom plugin.
     """
-    no_cache = "nocache" in message.get_args()
-    help_url = client.user_settings.get("help_current_url")
-    last_version = client.user_settings.get("help_generation_version")
-    last_handlers_number = client.user_settings.get("help_handlers_number")
+    settings = getattr(client, "user_settings")
+    no_cache = "nocache" in message.command
+    help_url = settings.get("help_current_url")
+    last_version = settings.get("help_generation_version")
+    last_handlers_number = settings.get("help_handlers_number")
 
     all_handlers: List[Handler] = []
     for group in client.dispatcher.groups.values():
@@ -156,11 +157,11 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
         or last_version != __version__
         or last_handlers_number != handlers_number
     ):
-        telegraph_token = client.user_settings.get("telegraph_access_token")
+        telegraph_token = settings.get("telegraph_access_token")
         telegraph = Telegraph(token=telegraph_token)
         if not telegraph_token:
             result = await telegraph.create_account("Telecharm service")
-            client.user_settings.set("telegraph_access_token", result.access_token)
+            settings.set("telegraph_access_token", result.access_token)
 
         page_title = "Telecharm Guide"
         content = prepare_page_content(all_handlers)
@@ -170,9 +171,9 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
             result = await telegraph.create_page(page_title, content)
 
         help_url = result.url
-        client.user_settings.set("help_current_url", result.url)
-        client.user_settings.set("help_generation_version", __version__)
-        client.user_settings.set("help_handlers_number", handlers_number)
+        settings.set("help_current_url", result.url)
+        settings.set("help_generation_version", __version__)
+        settings.set("help_handlers_number", handlers_number)
         await telegraph.close()
 
     await message.edit_text(
@@ -181,14 +182,13 @@ async def help_command(client: Client, message: Message):  # TODO: Add last time
         f'\n\n<i><a href="{help_url}">Telecharm Guide</a>'
         f'\n<a href="{conf.github_url}">Telecharm on GitHub</a></i>',
         disable_web_page_preview=True,
-        message_ttl=30,
     )
 
 
 @Client.on_message(filters.me & filters.command("sys", prefixes="."))
-async def system_information(_, message: Message):
+async def system_information(_, message: Message) -> None:
     """
     Show some technical info about the current system,
     used libraries` status, and Telecharm components.
     """
-    await message.edit_text(str(SysInfo()), message_ttl=15)
+    await message.edit_text(str(SysInfo()))

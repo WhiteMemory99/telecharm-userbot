@@ -1,4 +1,6 @@
-from pyrogram import filters
+from typing import Any
+
+from pyrogram import Client, filters
 from pyrogram.errors import (
     FirstnameInvalid,
     FloodWait,
@@ -6,13 +8,14 @@ from pyrogram.errors import (
     UsernameNotModified,
     UsernameOccupied,
 )
+from pyrogram.types import Message
 
-from app.utils import Client, Message, quote_html
+from app.utils import quote_html
 from app.utils.decorators import doc_args
 
 
 @Client.on_message(filters.me & filters.command("stats", prefixes="."))
-async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
+async def gather_stats(client: Client, message: Message) -> None:  # TODO: Improve stats
     """
     Get some interesting statistics on your chats and profile.
     <i>This command shows the most unread chat,
@@ -22,7 +25,7 @@ async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
     user_list = []
     peak_unread_chat = None
     total_chats = channels = privates = groups = pinned = unread = peak_unread_count = bots = 0
-    async for dialog in client.iter_dialogs():
+    async for dialog in client.get_dialogs():
         total_chats += 1
         if dialog.is_pinned:
             pinned += 1
@@ -34,7 +37,7 @@ async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
 
         if dialog.chat.type == "channel":
             channels += 1
-        elif dialog.chat.type in ("group", "supergroup"):
+        elif dialog.chat.type in {"group", "supergroup"}:
             groups += 1
         else:
             privates += 1
@@ -56,19 +59,18 @@ async def gather_stats(client: Client, message: Message):  # TODO: Improve stats
         f"Unread: <b>{unread}</b>\nChannels: <b>{channels}</b>\nPrivates: <b>{privates}</b>\n"
         f"Bots: <b>{bots}</b>\nGroups: <b>{groups}</b>\n\n"
         f"Telegram contacts: <b>{contacts}</b>\nPeak value of unread per chat: {unread_data}",
-        message_ttl=25,
     )
 
 
 @Client.on_message(filters.me & filters.command("name", prefixes="."))
 @doc_args("name")
-async def change_name(client: Client, message: Message):
+async def change_name(client: Client, message: Message) -> None:
     """
     Change the profile first name and/or last name,
     this command is flexible and has auto-balancing for long and messy names.
     The text length limit is <b>128</b>, the rest will be cut.
     """
-    args = message.get_args()
+    args = message.command[1:]
     if not args:
         await message.edit_text("Pass your new name.\n<code>.name I'm a superman!</code>")
     else:
@@ -88,24 +90,23 @@ async def change_name(client: Client, message: Message):
             full_name = f"{first_name} {last_name}" if last_name else first_name
             await message.edit_text(
                 f"Your name's been changed to:\n<code>{quote_html(full_name)}</code>",
-                message_ttl=5,
             )
         except FirstnameInvalid:
             await message.edit_text("Your new first name is invalid.")
         except FloodWait as ex:
             await message.edit_text(
-                f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5
+                f"<b>Too many requests</b>, retry in <code>{ex.value}</code> seconds."
             )
 
 
 @Client.on_message(filters.me & filters.command("username", prefixes="."))
 @doc_args("username")
-async def change_username(client: Client, message: Message):
+async def change_username(client: Client, message: Message) -> None:
     """
     Change the profile username. The text length limit is <b>32</b>.
     Supports `<code>del</code>` argument to delete the current username, if there is one.
     """
-    args = message.get_args(maximum=1)
+    args = message.command[1:]
     if not args:
         await message.edit_text(
             "Pass your new username.\n<code>.username del</code> to delete it."
@@ -119,8 +120,8 @@ async def change_username(client: Client, message: Message):
             text = f"Your username's been changed to:\n<code>@{quote_html(new_username)}</code>"
 
         try:
-            await client.update_username(new_username)
-            await message.edit_text(text, message_ttl=5)
+            await client.set_username(new_username)
+            await message.edit_text(text)
         except UsernameNotModified:
             await message.edit_text("This username is not different from the current one.")
         except UsernameOccupied:
@@ -132,18 +133,18 @@ async def change_username(client: Client, message: Message):
                 await message.edit_text("This username is invalid.")
         except FloodWait as ex:
             await message.edit_text(
-                f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5
+                f"<b>Too many requests</b>, retry in <code>{ex.value}</code> seconds."
             )
 
 
 @Client.on_message(filters.me & filters.command(["bio", "about"], prefixes="."))
 @doc_args("text")
-async def change_bio(client: Client, message: Message):
+async def change_bio(client: Client, message: Message) -> Any:
     """
     Change the profile about block. The text length limit is <b>70</b>, the rest will be cut.
     Supports `<code>del</code>` argument to delete the current bio, if there is one.
     """
-    args = message.get_args(maximum=1)
+    args = message.command[1:]
     if not args:
         await message.edit_text("Pass your new about info.\n<code>.bio del</code> to delete it.")
     else:
@@ -162,8 +163,8 @@ async def change_bio(client: Client, message: Message):
         try:
             # Max bio length is 70 chars, so we`ll cut it
             await client.update_profile(bio=new_bio[:70])
-            await message.edit_text(text, message_ttl=10)
+            await message.edit_text(text)
         except FloodWait as ex:
             await message.edit_text(
-                f"<b>Too many requests</b>, retry in <code>{ex.x}</code> seconds.", message_ttl=5
+                f"<b>Too many requests</b>, retry in <code>{ex.value}</code> seconds."
             )

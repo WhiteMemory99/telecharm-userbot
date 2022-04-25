@@ -1,7 +1,7 @@
 from typing import Union
 
 from loguru import logger
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.errors import (
     ChannelPrivate,
     InviteHashInvalid,
@@ -10,9 +10,9 @@ from pyrogram.errors import (
     UsernameInvalid,
     UsernameNotOccupied,
 )
-from pyrogram.types import Chat, ChatPreview, User
+from pyrogram.types import Chat, ChatPreview, Message, User
 
-from app.utils import Client, Message, quote_html
+from app.utils import quote_html
 from app.utils.decorators import CHAT_IDENTIFIERS, doc_args
 
 STATUS = {
@@ -31,16 +31,16 @@ DC_LOCATIONS = {
 
 @Client.on_message(filters.me & filters.command(["resolve", "whois", "id"], prefixes="."))
 @doc_args(CHAT_IDENTIFIERS)
-async def resolve_command(client: Client, message: Message):
+async def resolve_command(client: Client, message: Message) -> None:
     """
     Get some information about a user, channel or group by specifying a proper identifier.
     If the target is a private group or channel,
     the information you receive will be <b>limited</b>.
     """
     info = None
-    if entity := message.get_args(maximum=1):
+    if args := message.command[1:]:
         try:
-            target: Chat = await client.get_chat(entity[0])
+            target: Chat = await client.get_chat(args[0])
             if target.type == "private":  # Get a User object instead
                 target: User = await client.get_users(target.id)
 
@@ -74,7 +74,7 @@ async def resolve_command(client: Client, message: Message):
             info = get_entity_info(message.from_user)
 
     if info:  # We successfully got the info
-        await message.edit_text(info, disable_web_page_preview=True, message_ttl=20)
+        await message.edit_text(info, disable_web_page_preview=True)
 
 
 def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
