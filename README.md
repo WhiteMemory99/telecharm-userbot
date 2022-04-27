@@ -30,16 +30,8 @@ Currently, in active WIP state, so feel free to contribute.
 
 1. Build the image. Choose **one** of the two options below.
 
-- Basic image for everyone (**~210 MB**)
-
 ```cmd
 docker build -t telecharm-image .
-```
-
-- Extended image with complete `.anime` capabilities (**~1.1 GB**)
-
-```cmd
-docker build -t telecharm-image -f Dockerfile.full .
 ```
 
 2. After building, start the userbot in interactive mode.

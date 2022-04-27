@@ -20,7 +20,7 @@ async def purge_command(client: Client, message: Message) -> None:
     me_mode = "me" in message.command
 
     # Check admin rights if we want to delete all messages
-    if message.chat.type in ("group", "supergroup") and not me_mode:
+    if message.chat.type in {"group", "supergroup"} and not me_mode:
         member = await message.chat.get_member(message.from_user.id)
         if member.status != "creator" and not getattr(member, "can_delete_messages", False):
             me_mode = True  # Not enough rights, so we'll delete our messages only
@@ -34,7 +34,7 @@ async def purge_command(client: Client, message: Message) -> None:
                 continue  # Skip messages sent by others if me_mode is True
 
             if len(message_list) < 99:
-                message_list.append(history_message.message_id)
+                message_list.append(history_message.id)
             else:
                 await client.delete_messages(message.chat.id, message_ids=message_list)
                 message_list.clear()

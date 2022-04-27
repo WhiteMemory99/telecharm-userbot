@@ -1,5 +1,3 @@
-import os
-import tempfile
 from decimal import Decimal
 from http.client import responses
 from typing import Any, List, Optional
@@ -7,15 +5,9 @@ from typing import Any, List, Optional
 from aiohttp import ClientResponseError, ClientSession, ServerTimeoutError
 from pydantic import BaseModel, Field, ValidationError, validator
 from pyrogram import Client, filters
-from pyrogram.types import Animation, Document, Message, Video
+from pyrogram.types import Document, Message
 
 from app.utils import quote_html
-
-try:
-    import cv2
-except ImportError:
-    cv2 = None
-
 
 ALLOWED_MIME_TYPES = ("image", "video")
 
@@ -139,71 +131,43 @@ async def find_anime(client: Client, message: Message) -> Any:
     media = target_msg.photo or target_msg.video or target_msg.animation or target_msg.document
 
     if media is None or (
-        isinstance(media, Document)
-        and not any(mime_type in media.mime_type for mime_type in ALLOWED_MIME_TYPES)
+        isinstance(media, Document) and not media.mime_type.startswith(ALLOWED_MIME_TYPES)
     ):
         await message.edit_text(
             "A photo, video, GIF or <b>image/video</b> document is required.",
         )
     else:
-        with tempfile.TemporaryDirectory() as tempdir:
-            await message.edit_text("<i>Processing...</i>")
-            file_path = await client.download_media(
-                target_msg, file_name=os.path.join(tempdir, media.file_id)
+        await message.edit_text("<i>Processing...</i>")
+        file = await client.download_media(target_msg, in_memory=True)
+        file.seek(0)
+
+        session: ClientSession = getattr(client, "http_session")
+        try:
+            query_url = "https://api.trace.moe/search?cutBorders&anilistInfo"
+            async with await session.post(query_url, data={"file": file}) as resp:
+                resp.raise_for_status()
+                resp_json = await resp.json()
+                parsed_result = AnimeResult.parse_obj(resp_json["result"][0])
+
+            reply_to_id = message.reply_to_message.id if message.reply_to_message else None
+            await client.send_video(
+                message.chat.id,
+                parsed_result.big_video_link,
+                caption=parsed_result.format_to_text(),
+                reply_to_message_id=reply_to_id,
             )
-            if isinstance(media, (Animation, Video)):
-                if cv2 is not None:
-                    file_path = get_video_frame(file_path)
-                else:
-                    return await message.edit_text(
-                        "This media type requires <code>opencv-python</code>.",
-                    )
-
-            session: ClientSession = getattr(client, "http_session")
-            try:
-                async with await session.post(
-                    "https://api.trace.moe/search?cutBorders&anilistInfo",
-                    data={"file": open(file_path, "rb")},
-                ) as resp:
-                    resp.raise_for_status()
-                    resp_json = await resp.json()
-                    parsed_result = AnimeResult.parse_obj(resp_json["result"][0])
-
-                reply_to_id = message.reply_to_message.id if message.reply_to_message else None
-                await client.send_video(
-                    message.chat.id,
-                    parsed_result.big_video_link,
-                    caption=parsed_result.format_to_text(),
-                    reply_to_message_id=reply_to_id,
-                )
-                await message.delete()
-            except ServerTimeoutError:
-                await message.edit_text(
-                    "Failed to get info about this anime:\n<code>Read Timeout</code>",
-                )
-            except ClientResponseError as ex:
-                description = responses.get(ex.status)
-                await message.edit_text(
-                    f"Failed to get info about this anime:\n<code>{description}</code>",
-                )
-            except ValidationError:
-                await message.edit_text(
-                    "Seems that the API has changed.\n"
-                    "Please, update Telecharm or wait for new versions.",
-                )
-
-
-def get_video_frame(file_path: str) -> str:
-    """
-    Get a frame of any video or GIF with opencv. Requires opencv extras.
-
-    :param file_path: Path to the file
-    :return:
-    """
-    new_path = f"{file_path}.jpg"
-
-    video = cv2.VideoCapture(file_path)  # noqa
-    _, image = video.read()
-    cv2.imwrite(new_path, image)  # noqa
-
-    return new_path
+            await message.delete()
+        except ServerTimeoutError:
+            await message.edit_text(
+                "Failed to get info about this anime:\n<code>Read Timeout</code>",
+            )
+        except ClientResponseError as ex:
+            description = responses.get(ex.status)
+            await message.edit_text(
+                f"Failed to get info about this anime:\n<code>{description}</code>",
+            )
+        except ValidationError:
+            await message.edit_text(
+                "Seems that the API has changed.\n"
+                "Please, update Telecharm or wait for new versions.",
+            )
