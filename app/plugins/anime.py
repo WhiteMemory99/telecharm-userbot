@@ -13,7 +13,7 @@ from app.utils import quote_html
 
 ALLOWED_MIME_TYPES = ("image", "video")
 
-COUB_API_URL = "https://coub.com/api/v2/coubs/{video_id}"
+COUB_API_URL = "https://coub.com/api/v2/coubs/{}"
 
 
 class AnimeTitle(BaseModel):
@@ -128,12 +128,13 @@ async def get_coub_first_frame_url(session: ClientSession, video_id: str) -> Opt
     """Get the first frame of a coub video. (640x360)"""
     try:
         async with session.get(
-            COUB_API_URL.format(video_id), headers={"User-Agent": f"Telecharm/{__version__}"}
+            COUB_API_URL.format(video_id),
+            headers={"User-Agent": f"Telecharm/{__version__}"},
         ) as resp:
             resp.raise_for_status()
             coub_data = await resp.json()
 
-        first_frame_raw_url = coub_data["first_frame_versions"]["template"]
+        first_frame_raw_url = coub_data["picture"]
         return first_frame_raw_url.replace("%{version}", "med", 1)
     except ClientResponseError as ex:
         logger.error("Failed to get coub data: {}", ex)
