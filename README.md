@@ -58,13 +58,7 @@ docker start telecharm
    poetry install
    ```
 
-2. You can also install an optional **opencv-python** module to extend `.anime` functionality.
-
-   ```cmd
-   poetry install -E anime
-   ```
-
-3. Run the userbot with poetry.
+2. Run the userbot with poetry.
 
    ```cmd
    poetry run python app
@@ -78,13 +72,7 @@ docker start telecharm
    pip install -r requirements.txt
    ```
 
-2. If you want to extend `.anime` functionality, install an optional `opencv-python` module.
-
-   ```cmd
-   pip install opencv-python
-   ```
-
-3. Run the userbot.
+2. Run the userbot.
 
    ```cmd
    python3 -m app
