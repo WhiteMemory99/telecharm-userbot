@@ -42,7 +42,7 @@ async def search_saucenao(
         )
 
 
-@Client.on_message(filters.me & filters.command(["sauce", "saucenao"], prefixes="."))
+@Client.on_message(filters.me & filters.command(["sauce", "art"], prefixes="."))
 async def find_sauce(client: Client, message: Message) -> Any:
     """
     Find an art or picture source by replying to a photo, <b>image</b> document, or message with a
