@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  app:
+    command: python -m app
+    build:
+      context: .
+    env_file:
+      - .env
+    volumes:
+      - userbot_data:/userbot/app/files
+
+volumes:
+  userbot_data:

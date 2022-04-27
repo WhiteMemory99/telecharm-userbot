@@ -11,7 +11,6 @@ class Config(BaseSettings):
 
     class Config:
         allow_mutation = False
-        env_file = ".env"
 
 
 conf = Config()

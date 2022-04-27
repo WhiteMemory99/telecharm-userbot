@@ -26,18 +26,18 @@ Currently, in active WIP state, so feel free to contribute.
 
 ### Docker deployment
 
-**Make sure you have _[docker](https://docs.docker.com/get-docker/)_**.
+**Make sure you have _[docker](https://docs.docker.com/get-docker/)_** and **_docker-compose_**.
 
 1. Build the image. Choose **one** of the two options below.
 
 ```cmd
-docker build -t telecharm-image .
+docker-compose build
 ```
 
 2. After building, start the userbot in interactive mode.
 
 ```cmd
-docker run -it -v userbot_data:/userbot/app/files --name telecharm telecharm-image
+docker-compose run app
 ```
 
 3. Enter your number, auth code from Telegram and 2FA password, if you have one.
@@ -45,7 +45,7 @@ docker run -it -v userbot_data:/userbot/app/files --name telecharm telecharm-ima
 5. Run the userbot with docker.
 
 ```cmd
-docker start telecharm
+docker-compose up -d
 ```
 
 ### Poetry deployment
@@ -72,7 +72,9 @@ docker start telecharm
    pip install -r requirements.txt
    ```
 
-2. Run the userbot.
+2. Load environment variables from .env file as you want
+
+3. Run the userbot.
 
    ```cmd
    python3 -m app
