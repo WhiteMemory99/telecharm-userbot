@@ -132,7 +132,7 @@ async def get_coub_first_frame_url(session: ClientSession, video_id: str) -> Opt
         first_frame_raw_url = coub_data["first_frame_versions"]["template"]
         return first_frame_raw_url.replace("%{version}", "med", 1)
     except ClientResponseError as ex:
-        logger.error(f"Failed to get coub data: {ex}")
+        logger.error("Failed to get coub data: {}", ex)
 
 
 @Client.on_message(filters.me & filters.command(["anime", "whatanime"], prefixes="."))
@@ -153,7 +153,9 @@ async def find_anime(client: Client, message: Message) -> Any:
         video_id = target_msg.text.rsplit("/", 1)[-1]
         coub_first_frame_url = await get_coub_first_frame_url(session, video_id)
         if not coub_first_frame_url:
-            return await message.edit_text("Failed to retrieve this coub.")
+            return await message.edit_text(
+                f"Failed to retrieve this coub.\nhttps://coub.com/api/v2/coubs/{video_id}"
+            )
 
         url = f"https://api.trace.moe/search?cutBorders&anilistInfo&url={coub_first_frame_url}"
     elif media is None or (
