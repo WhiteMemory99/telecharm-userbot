@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 from http.client import responses
 from typing import Any, List, Optional
@@ -5,7 +6,7 @@ from typing import Any, List, Optional
 from aiohttp import ClientResponseError, ClientSession, ServerTimeoutError
 from loguru import logger
 from pydantic import BaseModel, Field, ValidationError, validator
-from pyrogram import Client, filters
+from pyrogram import Client, __version__, filters
 from pyrogram.types import Document, Message
 
 from app.utils import quote_html
@@ -125,7 +126,7 @@ async def get_coub_first_frame_url(session: ClientSession, video_id: str) -> Opt
     """Get the first frame of a coub video. (640x360)"""
     url = f"https://coub.com/api/v2/coubs/{video_id}"
     try:
-        async with session.get(url) as resp:
+        async with session.get(url, headers={"User-Agent": f"Telecharm/{__version__}"}) as resp:
             resp.raise_for_status()
             coub_data = await resp.json()
 
@@ -148,14 +149,12 @@ async def find_anime(client: Client, message: Message) -> Any:
     data = None
 
     session: ClientSession = getattr(client, "http_session")
-    if target_msg.text and target_msg.text.startswith(("https://coub.com/", "http://coub.com/")):
+    coub_pattern = re.compile(r"(http|https)?://(www\.)?coub\.com/view/(?P<video_id>[a-zA-Z\d]+)")
+    if target_msg.text and (match := coub_pattern.search(target_msg.text)):
         await message.edit_text("<i>Processing...</i>")
-        video_id = target_msg.text.rsplit("/", 1)[-1]
-        coub_first_frame_url = await get_coub_first_frame_url(session, video_id)
+        coub_first_frame_url = await get_coub_first_frame_url(session, match.group("video_id"))
         if not coub_first_frame_url:
-            return await message.edit_text(
-                f"Failed to retrieve this coub.\nhttps://coub.com/api/v2/coubs/{video_id}"
-            )
+            return await message.edit_text("Failed to retrieve this coub.")
 
         url = f"https://api.trace.moe/search?cutBorders&anilistInfo&url={coub_first_frame_url}"
     elif media is None or (
