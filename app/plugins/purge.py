@@ -27,9 +27,9 @@ async def purge_command(client: Client, message: Message) -> None:
 
     message_list: List[int] = []
     try:
-        async for history_message in client.get_chat_history(
-            message.chat.id, offset_id=message.reply_to_message.id
-        ):
+        async for history_message in client.get_chat_history(message.chat.id):
+            if history_message.id < message.reply_to_message.id:
+                break
             if me_mode and history_message.from_user.id != message.from_user.id:
                 continue  # Skip messages sent by others if me_mode is True
 

@@ -3,6 +3,7 @@ from http.client import responses
 from typing import Any, List, Optional
 
 from aiohttp import ClientResponseError, ClientSession, ServerTimeoutError
+from loguru import logger
 from pydantic import BaseModel, Field, ValidationError, validator
 from pyrogram import Client, filters
 from pyrogram.types import Document, Message
@@ -60,7 +61,8 @@ class AnimeResult(BaseModel):
         romaji_text = f"<b>Japanese title:</b> <code>{self.anilist.title.romaji}</code>"
         if self.anilist.title.english:
             text = (
-                romaji_text + f"\n<b>English title:</b> <code>{self.anilist.title.english}</code>"
+                romaji_text + f"\n<b>English title:</b> <code>"
+                f"{self.anilist.title.english}</code>"
             )
         else:
             text = romaji_text
@@ -119,55 +121,79 @@ class AnimeResult(BaseModel):
         )
 
 
+async def get_coub_first_frame_url(session: ClientSession, video_id: str) -> Optional[str]:
+    """Get the first frame of a coub video. (640x360)"""
+    url = f"https://coub.com/api/v2/coubs/{video_id}"
+    try:
+        async with session.get(url) as resp:
+            resp.raise_for_status()
+            coub_data = await resp.json()
+
+        first_frame_raw_url = coub_data["first_frame_versions"]["template"]
+        return first_frame_raw_url.replace("%{version}", "med", 1)
+    except ClientResponseError as ex:
+        logger.error(f"Failed to get coub data: {ex}")
+
+
 @Client.on_message(filters.me & filters.command(["anime", "whatanime"], prefixes="."))
 async def find_anime(client: Client, message: Message) -> Any:
     """
-    Find anime source by replying to a photo, <b>image</b> document, GIF or video.
+    Find anime source by replying to a photo, <b>image/video</b> document, GIF, video or coub URL.
     If successful, you will receive basic info about the found anime.
 
     Note, that <code>opencv-python</code> is required for GIF and video support.
     """
     target_msg = message.reply_to_message if message.reply_to_message else message
     media = target_msg.photo or target_msg.video or target_msg.animation or target_msg.document
+    data = None
 
-    if media is None or (
+    session: ClientSession = getattr(client, "http_session")
+    if target_msg.text and target_msg.text.startswith(("https://coub.com/", "http://coub.com/")):
+        await message.edit_text("<i>Processing...</i>")
+        video_id = target_msg.text.rsplit("/", 1)[-1]
+        coub_first_frame_url = await get_coub_first_frame_url(session, video_id)
+        if not coub_first_frame_url:
+            return await message.edit_text("Failed to retrieve this coub.")
+
+        url = f"https://api.trace.moe/search?cutBorders&anilistInfo&url={coub_first_frame_url}"
+    elif media is None or (
         isinstance(media, Document) and not media.mime_type.startswith(ALLOWED_MIME_TYPES)
     ):
-        await message.edit_text(
-            "A photo, video, GIF or <b>image/video</b> document is required.",
+        return await message.edit_text(
+            "A photo, video, GIF, <b>image/video</b> document or coub URL is required.",
         )
     else:
         await message.edit_text("<i>Processing...</i>")
+        url = "https://api.trace.moe/search?cutBorders&anilistInfo"
         file = await client.download_media(target_msg, in_memory=True)
         file.seek(0)
+        data = {"file": file}
 
-        session: ClientSession = getattr(client, "http_session")
-        try:
-            query_url = "https://api.trace.moe/search?cutBorders&anilistInfo"
-            async with await session.post(query_url, data={"file": file}) as resp:
-                resp.raise_for_status()
-                resp_json = await resp.json()
-                parsed_result = AnimeResult.parse_obj(resp_json["result"][0])
+    try:
+        async with session.post(url, data=data) as resp:
+            resp.raise_for_status()
+            resp_json = await resp.json()
+            parsed_result = AnimeResult.parse_obj(resp_json["result"][0])
 
-            reply_to_id = message.reply_to_message.id if message.reply_to_message else None
-            await client.send_video(
-                message.chat.id,
-                parsed_result.big_video_link,
-                caption=parsed_result.format_to_text(),
-                reply_to_message_id=reply_to_id,
-            )
-            await message.delete()
-        except ServerTimeoutError:
-            await message.edit_text(
-                "Failed to get info about this anime:\n<code>Read Timeout</code>",
-            )
-        except ClientResponseError as ex:
-            description = responses.get(ex.status)
-            await message.edit_text(
-                f"Failed to get info about this anime:\n<code>{description}</code>",
-            )
-        except ValidationError:
-            await message.edit_text(
-                "Seems that the API has changed.\n"
-                "Please, update Telecharm or wait for new versions.",
-            )
+        reply_to_id = message.reply_to_message.id if message.reply_to_message else None
+        await client.send_video(
+            message.chat.id,
+            parsed_result.big_video_link,
+            caption=parsed_result.format_to_text(),
+            reply_to_message_id=reply_to_id,
+        )
+        await message.delete()
+    except ServerTimeoutError:
+        await message.edit_text(
+            "Failed to get info about this anime:\n<code>Read Timeout</code>",
+        )
+    except ClientResponseError as ex:
+        description = responses.get(ex.status)
+        await message.edit_text(
+            f"Failed to get info about this anime:\n<code>{description}</code>",
+        )
+    except ValidationError:
+        await message.edit_text(
+            "Seems that the API has changed.\n"
+            "Please, update Telecharm or wait for new versions.",
+        )
