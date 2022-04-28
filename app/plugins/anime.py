@@ -154,8 +154,9 @@ async def find_anime(client: Client, message: Message) -> Any:
     data = None
 
     session: ClientSession = getattr(client, "http_session")
+    search_text = "<i>Contacting <b>TraceMoe</b>...</i>"
     if target_msg.text and (match := COUB_PATTERN.search(target_msg.text)):
-        await message.edit_text("<i>Processing...</i>")
+        await message.edit_text(search_text)
         coub_first_frame_url = await get_coub_first_frame_url(session, match.group("video_id"))
         if not coub_first_frame_url:
             return await message.edit_text("Failed to retrieve this coub.")
@@ -168,7 +169,7 @@ async def find_anime(client: Client, message: Message) -> Any:
             "A photo, video, GIF, <b>image/video</b> document or coub URL is required.",
         )
     else:
-        await message.edit_text("<i>Processing...</i>")
+        await message.edit_text(search_text)
         url = "https://api.trace.moe/search?cutBorders&anilistInfo"
         file = await client.download_media(target_msg, in_memory=True)
         file.seek(0)

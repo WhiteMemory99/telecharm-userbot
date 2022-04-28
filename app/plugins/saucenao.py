@@ -71,7 +71,7 @@ async def find_sauce(client: Client, message: Message) -> Any:
             )
     else:
         with tempfile.TemporaryDirectory() as tempdir:
-            await message.edit_text("<i>Processing...</i>")
+            await message.edit_text("<i>Searching <b>SauceNao</b>...</i>")
             file_path = await client.download_media(
                 target_msg, file_name=os.path.join(tempdir, media.file_id)
             )
