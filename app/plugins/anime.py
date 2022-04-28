@@ -14,6 +14,7 @@ from app.utils import quote_html
 ALLOWED_MIME_TYPES = ("image", "video")
 
 COUB_API_URL = "https://coub.com/api/v2/coubs/{}"
+COUB_PATTERN = re.compile(r"(https?://)?(www\.)?coub\.com/view/(?P<video_id>[a-zA-Z\d]+)")
 
 
 class AnimeTitle(BaseModel):
@@ -153,8 +154,7 @@ async def find_anime(client: Client, message: Message) -> Any:
     data = None
 
     session: ClientSession = getattr(client, "http_session")
-    coub_pattern = re.compile(r"(http|https)?://(www\.)?coub\.com/view/(?P<video_id>[a-zA-Z\d]+)")
-    if target_msg.text and (match := coub_pattern.search(target_msg.text)):
+    if target_msg.text and (match := COUB_PATTERN.search(target_msg.text)):
         await message.edit_text("<i>Processing...</i>")
         coub_first_frame_url = await get_coub_first_frame_url(session, match.group("video_id"))
         if not coub_first_frame_url:
