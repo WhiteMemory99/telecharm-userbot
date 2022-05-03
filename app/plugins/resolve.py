@@ -2,6 +2,7 @@ from typing import Union
 
 from loguru import logger
 from pyrogram import Client, filters
+from pyrogram.enums import ChatType
 from pyrogram.errors import (
     ChannelPrivate,
     InviteHashInvalid,
@@ -41,7 +42,7 @@ async def resolve_command(client: Client, message: Message) -> None:
     if args := message.command[1:]:
         try:
             target: Chat = await client.get_chat(args[0])
-            if target.type == "private":  # Get a User object instead
+            if target.type is ChatType.PRIVATE:  # Get a User object instead
                 target: User = await client.get_users(target.id)
 
             info = get_entity_info(target)
@@ -119,7 +120,7 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
 
         full_text = (
             f"<b>{title}</b>\n\n{description}<b>ID</b>: "
-            f"<code>{entity.id}</code>\nType: <b>{entity.type}</b>\n"
+            f"<code>{entity.id}</code>\nType: <b>{entity.type.value}</b>\n"
             f"Linked chat: {linked_chat}\nIs private: <b>{STATUS[is_private]}</b>\n"
             f"Is scam: <b>{STATUS[entity.is_scam]}</b>\nData center: <b>{dc_name}</b>"
         )
