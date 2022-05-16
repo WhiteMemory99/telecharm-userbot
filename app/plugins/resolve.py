@@ -122,7 +122,7 @@ def get_entity_info(entity: Union[User, Chat, ChatPreview]) -> str:
             f"<b>{title}</b>\n\n{description}<b>ID</b>: "
             f"<code>{entity.id}</code>\nType: <b>{entity.type.value}</b>\n"
             f"Linked chat: {linked_chat}\nIs private: <b>{STATUS[is_private]}</b>\n"
-            f"Is scam: <b>{STATUS[entity.is_scam]}</b>\nData center: <b>{dc_name}</b>"
+            f"Is scam: <b>{STATUS[entity.is_scam or False]}</b>\nData center: <b>{dc_name}</b>"
         )
 
     return full_text

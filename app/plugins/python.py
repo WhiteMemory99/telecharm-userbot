@@ -20,11 +20,11 @@ async def execute_python(client: Client, message: Message) -> Any:
     Also, be wary of security threats when using this command, and <b>DO NOT</b> use any suspicious
     code given by other people.
     """
-    argument = " ".join(message.command[1:])
-    if ".session" in argument:
-        return await message.edit_text("This command was blocked due to security reasons.")
+    args = message.text.split(maxsplit=1)[1:]
+    if args:
+        if ".session" in args[0]:
+            return await message.edit_text("This command was blocked due to security reasons.")
 
-    if argument:
         result_type = "Output"
         old_stdout = sys.stdout
         old_stderr = sys.stderr
@@ -32,7 +32,7 @@ async def execute_python(client: Client, message: Message) -> Any:
             # Replace stdout and stderr to catch prints and unhandled errors
             sys.stdout = StringIO()
             sys.stderr = StringIO()
-            exec(argument, globals(), locals())
+            exec(args[0], globals(), locals())
 
             raw_output = (
                 sys.stdout.getvalue().strip().split("\n") if sys.stdout.getvalue() else None
@@ -50,12 +50,12 @@ async def execute_python(client: Client, message: Message) -> Any:
                 output = "The script was successful..."
 
             text = "<b>Input:</b>\n<pre>{}</pre>\n\n<b>{}:</b>\n<pre>{}</pre>".format(
-                quote_html(argument), result_type, quote_html(output)
+                quote_html(args[0]), result_type, quote_html(output)
             )
         except Exception:  # noqa
             ex_type, ex_value, _ = sys.exc_info()
             text = "<b>Input:</b>\n<pre>{}</pre>\n\n<b>Error log:</b>\n<pre>{}</pre>".format(
-                quote_html(argument),
+                quote_html(args[0]),
                 quote_html("".join(traceback.format_exception_only(ex_type, ex_value)).strip()),
             )
         finally:  # Always return to original stdout and stderr
