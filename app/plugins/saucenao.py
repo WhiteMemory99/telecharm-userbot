@@ -3,6 +3,7 @@ import tempfile
 from typing import Any, List, Optional
 
 from pyrogram import Client, filters
+from pyrogram.enums import MessageEntityType
 from pyrogram.types import Document, Message, MessageEntity
 from saucenaopie import AsyncSauceNao
 from saucenaopie.exceptions import ImageInvalid, LongLimitReached, SauceNaoError, ShortLimitReached
@@ -14,9 +15,9 @@ from app.utils import extract_entity_text
 def get_first_url(entities: List[MessageEntity], text: str) -> Optional[str]:
     """Iterate the message entities and get the first URL if there is any."""
     for entity in entities:
-        if entity.type == "url":
+        if entity.type is MessageEntityType.URL:
             return extract_entity_text(text, entity.offset, entity.length)
-        elif entity.type == "text_link":
+        elif entity.type is MessageEntityType.TEXT_LINK:
             return entity.url
 
 
