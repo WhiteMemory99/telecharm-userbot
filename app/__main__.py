@@ -41,7 +41,12 @@ async def main() -> None:
         workdir=(this_dir / "files").as_posix(),
     )
 
-    setattr(client, "saucenao", AsyncSauceNao(conf.saucenao_key) if conf.saucenao_key else None)
+    if conf.saucenao_key:
+        saucenao = AsyncSauceNao(conf.saucenao_key, allow_partial_success=True)
+    else:
+        saucenao = None
+
+    setattr(client, "saucenao", saucenao)
     setattr(client, "http_session", ClientSession())
     setattr(client, "user_settings", UserSettings(this_dir / "files" / "user_settings.json"))
 

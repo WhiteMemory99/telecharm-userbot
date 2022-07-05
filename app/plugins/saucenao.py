@@ -2,6 +2,7 @@ import os
 import tempfile
 from typing import Any, List, Optional
 
+from loguru import logger
 from pyrogram import Client, filters
 from pyrogram.enums import MessageEntityType
 from pyrogram.types import Document, Message, MessageEntity
@@ -14,6 +15,9 @@ from app.utils import extract_entity_text
 
 def get_first_url(entities: List[MessageEntity], text: str) -> Optional[str]:
     """Iterate the message entities and get the first URL if there is any."""
+    if not entities:
+        return None
+
     for entity in entities:
         if entity.type is MessageEntityType.URL:
             return extract_entity_text(text, entity.offset, entity.length)
@@ -36,8 +40,10 @@ async def search_saucenao(
             "Your SauceNao profile reached its short limit, try again in a few seconds."
         )
     except ImageInvalid:
+        logger.exception("Invalid image provided.")
         await message.edit_text("The image is bad, couldn't get its sources.")
     except SauceNaoError:
+        logger.exception("Unexpected error while searching SauceNao.")
         await message.edit_text(
             "Some unexpected error has occurred while processing this picture."
         )

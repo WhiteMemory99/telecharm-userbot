@@ -23,6 +23,7 @@ saucenaopie = "^1.3.2"
 black = "^22.1.0"
 isort = "^5.10.1"
 flake8 = "^4.0.1"
+tryceratops = "^1.1.0"
 
 [tool.poetry.extras]
 fast = ["uvloop", "ujson"]
